@@ -1198,7 +1198,7 @@ function displayOrders(orders) {
 }
 
 // دالة لعرض النافذة المنبثقة
-function showOrderDetailsModal(order) {
+async function showOrderDetailsModal(order) {
     const modal = document.createElement('div');
     modal.style.cssText = `
         position: fixed;
@@ -1215,7 +1215,21 @@ function showOrderDetailsModal(order) {
         animation: fadeIn 0.3s ease;
     `;
     
-    // بناء محتوى الطلب
+    // إضافة CSS للرسوم المتحركة
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // بناء محتوى الطلب الأساسي
     const orderNumber = order.id ? order.id.toString().padStart(6, '0') : '000000';
     const orderDate = formatDate(order.created_at);
     const totalAmount = order.total_amount || 0;
@@ -1225,94 +1239,88 @@ function showOrderDetailsModal(order) {
     // حالة الطلب
     const statusInfo = getStatusInfo(order.order_state || order.status || 'pending');
     
+    // إنشاء محتوى أولي للنافذة
     modal.innerHTML = `
-        <div style="background: white; border-radius: 16px; padding: 30px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="color: var(--primary); margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-info-circle"></i>
-                    تفاصيل الطلب #${orderNumber}
-                </h3>
-                <button onclick="this.parentElement.parentElement.remove()" 
-                        style="background: none; border: none; font-size: 1.5rem; color: var(--gray-600); cursor: pointer; padding: 5px;">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
-                <div style="background: var(--gray-50); padding: 15px; border-radius: 10px;">
-                    <div style="color: var(--gray-600); font-size: 14px; margin-bottom: 5px;">
-                        <i class="fas fa-calendar"></i> التاريخ
-                    </div>
-                    <div style="font-weight: bold; color: var(--gray-800);">
-                        ${orderDate}
-                    </div>
-                </div>
-                
-                <div style="background: var(--gray-50); padding: 15px; border-radius: 10px;">
-                    <div style="color: var(--gray-600); font-size: 14px; margin-bottom: 5px;">
-                        <i class="fas fa-credit-card"></i> الإجمالي
-                    </div>
-                    <div style="font-weight: bold; color: var(--gray-800);">
-                        ${totalAmount.toFixed(2)} جنيه
-                    </div>
-                </div>
-                
-                <div style="background: var(--gray-50); padding: 15px; border-radius: 10px;">
-                    <div style="color: var(--gray-600); font-size: 14px; margin-bottom: 5px;">
-                        <i class="fas fa-truck"></i> التوصيل
-                    </div>
-                    <div style="font-weight: bold; color: var(--gray-800);">
-                        ${deliveryFee.toFixed(2)} جنيه
-                    </div>
-                </div>
-                
-                <div style="background: var(--gray-50); padding: 15px; border-radius: 10px;">
-                    <div style="color: var(--gray-600); font-size: 14px; margin-bottom: 5px;">
-                        <i class="fas fa-map-marker-alt"></i> الفرع
-                    </div>
-                    <div style="font-weight: bold; color: var(--gray-800);">
-                        ${order.branches?.name || order.branch_name || 'غير محدد'}
-                    </div>
-                </div>
-                
-                <div style="background: var(--gray-50); padding: 15px; border-radius: 10px; grid-column: span 2;">
-                    <div style="color: var(--gray-600); font-size: 14px; margin-bottom: 5px;">
-                        <i class="fas fa-user"></i> العميل
-                    </div>
-                    <div style="font-weight: bold; color: var(--gray-800);">
-                        ${order.clients?.name || clientData?.name || 'غير معروف'}
-                    </div>
-                    ${order.clients?.phone ? `
-                        <div style="color: var(--gray-600); font-size: 12px; margin-top: 5px;">
-                            <i class="fas fa-phone"></i> ${order.clients.phone}
+        <div style="background: white; border-radius: 16px; padding: 0; max-width: 800px; width: 100%; max-height: 90vh; overflow: hidden; animation: slideUp 0.4s ease;">
+            <!-- الهيدر -->
+            <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <h3 style="margin: 0 0 8px 0; font-size: 22px; display: flex; align-items: center; gap: 12px;">
+                            <i class="fas fa-file-invoice"></i>
+                            فاتورة الطلب #${orderNumber}
+                        </h3>
+                        <div style="opacity: 0.9; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+                            <span><i class="fas fa-calendar"></i> ${orderDate}</span>
+                            <span>•</span>
+                            <span style="background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px;">
+                                ${statusInfo.text}
+                            </span>
                         </div>
-                    ` : ''}
+                    </div>
+                    <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" 
+                            style="background: rgba(255, 255, 255, 0.2); border: none; width: 40px; height: 40px; border-radius: 10px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.3s;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- معلومات سريعة -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 20px;">
+                    <div style="background: rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 10px;">
+                        <div style="font-size: 13px; opacity: 0.9; margin-bottom: 5px;">
+                            <i class="fas fa-money-bill-wave"></i> الإجمالي
+                        </div>
+                        <div style="font-size: 20px; font-weight: bold;">
+                            ${totalAmount.toFixed(2)} ج.م
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 10px;">
+                        <div style="font-size: 13px; opacity: 0.9; margin-bottom: 5px;">
+                            <i class="fas fa-truck"></i> التوصيل
+                        </div>
+                        <div style="font-size: 20px; font-weight: bold;">
+                            ${deliveryFee.toFixed(2)} ج.م
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 10px;">
+                        <div style="font-size: 13px; opacity: 0.9; margin-bottom: 5px;">
+                            <i class="fas fa-store"></i> الفرع
+                        </div>
+                        <div style="font-size: 16px; font-weight: bold;">
+                            ${order.branches?.name || order.branch_name || 'غير محدد'}
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            ${order.customer_notes ? `
-                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #bfdbfe;">
-                    <div style="color: var(--info); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-file-medical"></i>
-                        ملاحظات الطلب
-                    </div>
-                    <div style="color: var(--gray-800); line-height: 1.6;">
-                        ${order.customer_notes}
-                    </div>
+            <!-- محتوى النافذة -->
+            <div style="padding: 30px; max-height: 60vh; overflow-y: auto;" id="orderModalContent">
+                <div style="text-align: center; padding: 40px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 40px; color: var(--primary); margin-bottom: 20px;"></i>
+                    <p style="color: var(--gray-600);">جاري تحميل تفاصيل الطلب...</p>
                 </div>
-            ` : ''}
+            </div>
             
-            <div style="margin-top: 25px; display: flex; gap: 10px; justify-content: center;">
-                <button onclick="window.print()" 
-                        style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold;">
-                    <i class="fas fa-print"></i>
-                    طباعة الفاتورة
-                </button>
-                <button onclick="shareOrder(${order.id})" 
-                        style="background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold;">
-                    <i class="fas fa-share-alt"></i>
-                    مشاركة
-                </button>
+            <!-- الفوتر -->
+            <div style="background: var(--gray-50); padding: 20px; border-top: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;">
+                <div style="color: var(--gray-600); font-size: 14px;">
+                    <i class="fas fa-info-circle"></i> 
+                    الطلب من: ${order.clients?.name || clientData?.name || 'غير معروف'}
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="window.print()" 
+                            style="background: white; color: var(--primary); border: 2px solid var(--primary); padding: 10px 20px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold; transition: all 0.3s;">
+                        <i class="fas fa-print"></i>
+                        طباعة
+                    </button>
+                    <button onclick="shareOrder(${order.id})" 
+                            style="background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold; transition: all 0.3s;">
+                        <i class="fas fa-share-alt"></i>
+                        مشاركة
+                    </button>
+                </div>
             </div>
         </div>
     `;
@@ -1325,8 +1333,390 @@ function showOrderDetailsModal(order) {
             modal.remove();
         }
     });
+    
+    // جلب تفاصيل الطلب الكاملة
+    await loadFullOrderDetails(order.id);
 }
 
+async function loadFullOrderDetails(orderId) {
+    try {
+        console.log(`📋 جلب تفاصيل الطلب #${orderId}`);
+        
+        const response = await fetch(`${API_BASE}/orders/${orderId}`);
+        const result = await response.json();
+        
+        console.log('📊 استجابة API:', {
+            success: result.success,
+            order_number: result.data?.order?.order_number,
+            branch: result.data?.order?.branch,
+            client: result.data?.order?.client,
+            items_count: result.data?.items?.length
+        });
+        
+        if (result.success) {
+            // عرض البيانات في الكونسول للتحقق
+            console.log('🔍 تفاصيل الطلب:', {
+                branch: result.data.order.branch,
+                client: result.data.order.client,
+                delivery_info: result.data.order.delivery_info,
+                items: result.data.items
+            });
+            
+            updateOrderModalContent(result.data);
+        } else {
+            showErrorInModal(result.message || 'تعذر تحميل تفاصيل الطلب');
+        }
+    } catch (error) {
+        console.error('❌ خطأ في جلب تفاصيل الطلب:', error);
+        showErrorInModal('خطأ في الاتصال بالسيرفر');
+    }
+}
+
+function updateOrderModalContent(orderData) {
+    const modalContent = document.getElementById('orderModalContent');
+    const order = orderData.order;
+    
+    console.log('🔍 [UI] تحديث واجهة تفاصيل الطلب:', {
+        order: order,
+        branch: order.branch,
+        client: order.client,
+        items: orderData.items
+    });
+    
+    // التحقق من وجود البيانات
+    if (!order) {
+        console.error('❌ [UI] بيانات الطلب غير موجودة');
+        return;
+    }
+    
+    console.log('✅ [UI] بيانات الطلب موجودة:', {
+        order_number: order.order_number,
+        branch_name: order.branch?.name || 'غير محدد في order.branch',
+        client_address: order.client?.address || 'غير محدد في order.client',
+        delivery_fee: order.delivery_fee
+    });
+    
+    // جمع تفاصيل المنتجات
+    const allItems = (orderData.items || []).map(item => ({
+        ...item,
+        total: (item.unit_price || 0) * item.quantity
+    }));
+    
+    // حساب المجاميع
+    const itemsTotal = allItems.reduce((sum, item) => sum + item.total, 0);
+    const deliveryFee = order.delivery_fee || order.delivery_info?.fee || 0;
+    const finalTotal = order.total_amount || (itemsTotal + deliveryFee);
+    
+    // حالة الطلب
+    const statusInfo = getStatusInfo(order.order_state || order.status);
+    
+    // 🔥 التأكد من عرض البيانات بشكل صحيح
+    modalContent.innerHTML = `
+        <div style="margin-bottom: 25px;">
+            <h4 style="color: var(--gray-800); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--gray-200); display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-shopping-basket"></i>
+                المنتجات (${allItems.length})
+            </h4>
+            
+            <div style="background: white; border-radius: 12px; border: 1px solid var(--gray-200); overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--gray-50); border-bottom: 2px solid var(--gray-200);">
+                            <th style="padding: 15px; text-align: right; color: var(--gray-700); font-weight: 600; width: 50px;">#</th>
+                            <th style="padding: 15px; text-align: right; color: var(--gray-700); font-weight: 600;">المنتج</th>
+                            <th style="padding: 15px; text-align: center; color: var(--gray-700); font-weight: 600; width: 100px;">السعر</th>
+                            <th style="padding: 15px; text-align: center; color: var(--gray-700); font-weight: 600; width: 100px;">الكمية</th>
+                            <th style="padding: 15px; text-align: center; color: var(--gray-700); font-weight: 600; width: 120px;">المجموع</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${allItems.map((item, index) => `
+                            <tr style="border-bottom: 1px solid var(--gray-100); transition: background 0.2s;" 
+                                onmouseenter="this.style.background='var(--gray-50)'" 
+                                onmouseleave="this.style.background='white'">
+                                <td style="padding: 15px; text-align: center; color: var(--gray-600);">
+                                    ${index + 1}
+                                </td>
+                                <td style="padding: 15px; text-align: right;">
+                                    <div style="font-weight: bold; color: var(--gray-900); margin-bottom: 5px;">
+                                        ${item.product_name || 'منتج غير معروف'}
+                                    </div>
+                                    <div style="font-size: 13px; color: var(--gray-600);">
+                                        <span style="background: ${item.type === 'drug' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)'}; 
+                                                color: ${item.type === 'drug' ? 'var(--success)' : '#3b82f6'}; 
+                                                padding: 3px 8px; border-radius: 4px; font-size: 12px;">
+                                            ${item.type === 'drug' ? 'دواء' : 'مستحضر'}
+                                        </span>
+                                        ${item.product_details ? `
+                                            <div style="margin-top: 5px; color: var(--gray-500); font-size: 12px;">
+                                                <i class="fas fa-info-circle"></i> ${item.product_details}
+                                            </div>
+                                        ` : ''}
+                                        ${item.notes ? `
+                                            <div style="margin-top: 5px; color: var(--gray-500); font-size: 12px;">
+                                                <i class="fas fa-sticky-note"></i> ${item.notes}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </td>
+                                <td style="padding: 15px; text-align: center; color: var(--gray-800); font-weight: 600;">
+                                    ${item.unit_price?.toFixed(2) || '0.00'} ج.م
+                                </td>
+                                <td style="padding: 15px; text-align: center; color: var(--gray-800);">
+                                    ${item.quantity}
+                                </td>
+                                <td style="padding: 15px; text-align: center; color: var(--primary); font-weight: bold;">
+                                    ${item.total.toFixed(2)} ج.م
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 🔥 معلومات التوصيل - معدلة -->
+        <div style="margin-bottom: 25px;">
+            <h4 style="color: var(--gray-800); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--gray-200); display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-truck"></i>
+                معلومات التوصيل
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <!-- الفرع -->
+                <div style="background: var(--gray-50); padding: 15px; border-radius: 10px; border: 1px solid var(--gray-200);">
+                    <div style="color: var(--gray-600); font-size: 14px; margin-bottom: 5px;">
+                        <i class="fas fa-store"></i> الفرع
+                    </div>
+                    <div style="font-weight: bold; color: var(--gray-800);">
+                        ${order.branch?.name || 'غير محدد'}
+                    </div>
+                </div>
+                
+                <!-- عنوان التوصيل -->
+                <div style="background: var(--gray-50); padding: 15px; border-radius: 10px; border: 1px solid var(--gray-200);">
+                    <div style="color: var(--gray-600); font-size: 14px; margin-bottom: 5px;">
+                        <i class="fas fa-map-marker-alt"></i> عنوان التوصيل
+                    </div>
+                    <div style="font-weight: bold; color: var(--gray-800);">
+                        ${order.client?.address || 'غير محدد'}
+                    </div>
+                </div>
+                
+                <!-- مندوب التوصيل -->
+                <div style="background: var(--gray-50); padding: 15px; border-radius: 10px; border: 1px solid var(--gray-200);">
+                    <div style="color: var(--gray-600); font-size: 14px; margin-bottom: 5px;">
+                        <i class="fas fa-user"></i> مندوب التوصيل
+                    </div>
+                    <div style="font-weight: bold; color: var(--gray-800);">
+                        ${order.delivery_person?.name || 'لم يتم تعيينه بعد'}
+                    </div>
+                </div>
+                
+                <!-- هاتف العميل -->
+                ${order.client?.phone ? `
+                    <div style="background: var(--gray-50); padding: 15px; border-radius: 10px; border: 1px solid var(--gray-200);">
+                        <div style="color: var(--gray-600); font-size: 14px; margin-bottom: 5px;">
+                            <i class="fas fa-phone"></i> هاتف العميل
+                        </div>
+                        <div style="font-weight: bold; color: var(--gray-800);">
+                            <a href="tel:${order.client.phone}" style="color: var(--primary); text-decoration: none;">
+                                ${order.client.phone}
+                            </a>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+        
+        <!-- ملخص الفاتورة -->
+        <div style="background: white; border-radius: 12px; border: 2px solid var(--gray-200); padding: 25px; margin-top: 20px;">
+            <h4 style="color: var(--gray-800); margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--gray-200); display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-file-invoice-dollar"></i>
+                ملخص الفاتورة
+            </h4>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--gray-200);">
+                    <span style="color: var(--gray-600);">إجمالي المنتجات:</span>
+                    <span style="color: var(--gray-800); font-weight: 600;">${itemsTotal.toFixed(2)} ج.م</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--gray-200);">
+                    <span style="color: var(--gray-600);">رسوم التوصيل:</span>
+                    <span style="color: var(--gray-800); font-weight: 600;">${deliveryFee.toFixed(2)} ج.م</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-top: 2px solid var(--gray-200);">
+                    <span style="color: var(--primary); font-size: 18px; font-weight: bold;">المبلغ الإجمالي:</span>
+                    <span style="color: var(--primary); font-size: 24px; font-weight: bold;">${finalTotal.toFixed(2)} ج.م</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, ${statusInfo.color}20 0%, ${statusInfo.color}10 100%); border-radius: 10px; border: 1px solid ${statusInfo.color}30;">
+                <div style="display: flex; align-items: center; gap: 10px; color: ${statusInfo.color};">
+                    <i class="fas ${statusInfo.icon}"></i>
+                    <span style="font-weight: bold; font-size: 16px;">${statusInfo.text}</span>
+                    <span style="margin-right: auto; font-size: 14px; opacity: 0.8;">حالة الطلب</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 🔥 تحديث الهيدر في النافذة (الأهم)
+    setTimeout(() => {
+        // تحديث معلومات التوصيل في الهيدر
+        const headerElement = document.querySelector('.cart-header');
+        if (headerElement) {
+            headerElement.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <h3 style="margin: 0 0 8px 0; font-size: 22px; display: flex; align-items: center; gap: 12px;">
+                            <i class="fas fa-file-invoice"></i>
+                            فاتورة الطلب #${order.order_number || order.id}
+                        </h3>
+                        <div style="opacity: 0.9; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+                            <span><i class="fas fa-calendar"></i> ${formatDate(order.created_at)}</span>
+                            <span>•</span>
+                            <span><i class="fas fa-store"></i> ${order.branch?.name || 'غير محدد'}</span>
+                            <span>•</span>
+                            <span style="background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px;">
+                                ${statusInfo.text}
+                            </span>
+                        </div>
+                    </div>
+                    <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" 
+                            style="background: rgba(255, 255, 255, 0.2); border: none; width: 40px; height: 40px; border-radius: 10px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.3s;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- معلومات سريعة -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 20px;">
+                    <div style="background: rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 10px;">
+                        <div style="font-size: 13px; opacity: 0.9; margin-bottom: 5px;">
+                            <i class="fas fa-money-bill-wave"></i> الإجمالي
+                        </div>
+                        <div style="font-size: 20px; font-weight: bold;">
+                            ${finalTotal.toFixed(2)} ج.م
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 10px;">
+                        <div style="font-size: 13px; opacity: 0.9; margin-bottom: 5px;">
+                            <i class="fas fa-truck"></i> التوصيل
+                        </div>
+                        <div style="font-size: 20px; font-weight: bold;">
+                            ${deliveryFee.toFixed(2)} ج.م
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 10px;">
+                        <div style="font-size: 13px; opacity: 0.9; margin-bottom: 5px;">
+                            <i class="fas fa-store"></i> الفرع
+                        </div>
+                        <div style="font-size: 16px; font-weight: bold;">
+                            ${order.branch?.name || 'غير محدد'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }, 100);
+}
+
+function showErrorInModal(message) {
+    const modalContent = document.getElementById('orderModalContent');
+    modalContent.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px;">
+            <div style="width: 80px; height: 80px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 40px; color: var(--danger);"></i>
+            </div>
+            <h3 style="color: var(--gray-700); margin-bottom: 10px;">${message}</h3>
+            <p style="color: var(--gray-600); margin-bottom: 20px;">تعذر تحميل تفاصيل الطلب. يرجى المحاولة مرة أخرى.</p>
+            <button onclick="window.location.reload()" 
+                    style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
+                <i class="fas fa-redo"></i> إعادة المحاولة
+            </button>
+        </div>
+    `;
+}
+
+function viewImage(imageUrl) {
+    const viewer = document.createElement('div');
+    viewer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 3000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    `;
+    
+    viewer.innerHTML = `
+        <div style="position: relative; max-width: 90%; max-height: 90%;">
+            <img src="${imageUrl}" 
+                 style="max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);"
+                 alt="صورة الروشتة">
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="position: absolute; top: -40px; left: 0; background: rgba(255,255,255,0.2); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-times"></i>
+            </button>
+            <div style="position: absolute; bottom: -40px; right: 0; color: white; font-size: 14px; opacity: 0.8;">
+                اضغط ESC أو انقر خارج الصورة للإغلاق
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(viewer);
+    
+    // إغلاق عند النقر خارج الصورة
+    viewer.addEventListener('click', function(e) {
+        if (e.target === viewer) {
+            viewer.remove();
+        }
+    });
+    
+    // إغلاق عند ضغط ESC
+    document.addEventListener('keydown', function closeViewer(e) {
+        if (e.key === 'Escape') {
+            viewer.remove();
+            document.removeEventListener('keydown', closeViewer);
+        }
+    });
+}
+
+// دالة مساعدة للحصول على معلومات الحالة
+function getStatusInfo(status) {
+    const statuses = {
+        pending: { text: 'قيد الانتظار', color: '#f59e0b', icon: 'fa-clock' },
+        confirmed: { text: 'تم التأكيد', color: '#3b82f6', icon: 'fa-check-circle' },
+        preparing: { text: 'قيد التحضير', color: '#8b5cf6', icon: 'fa-box' },
+        on_the_way: { text: 'في الطريق', color: '#6366f1', icon: 'fa-truck' },
+        delivered: { text: 'تم التسليم', color: '#10b981', icon: 'fa-check-double' },
+        cancelled: { text: 'ملغى', color: '#ef4444', icon: 'fa-times-circle' }
+    };
+    
+    return statuses[status] || statuses.pending;
+}
+
+// دالة مساعدة لتنسيق التاريخ
+function formatDate(dateString) {
+    if (!dateString) return 'غير محدد';
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
 // دالة لعرض النافذة المنبثقة
 function showOrderModal(details, orderId, order) {
     const modal = document.createElement('div');
