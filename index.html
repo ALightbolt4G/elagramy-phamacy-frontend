@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صيدلية سارة العجرمي - الرئيسية</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --secondary: #10b981;
+            --light-bg: #f9fafb;
+            --white: #ffffff;
+            --text: #374151;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Cairo', 'Segoe UI', 'Noto Sans Arabic', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* الهيدر */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            margin-bottom: 40px;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+        }
+        
+        .logo {
+            margin-bottom: 20px;
+        }
+        
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 32px;
+        }
+        
+        .logo h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* الإحصائيات */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            min-width: 140px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        /* القائمة الرئيسية */
+        .main-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin: 40px 0;
+        }
+        
+        .menu-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.3s ease;
+            border: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        
+        .menu-card i {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            display: inline-block;
+            color: var(--primary);
+            transition: transform 0.3s ease;
+        }
+        
+        .menu-card:hover i {
+            transform: scale(1.1);
+        }
+        
+        .menu-card h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+        
+        .menu-card p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        
+        .menu-card .arrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+        
+        .menu-card:hover .arrow {
+            transform: translateX(-4px);
+        }
+        
+        /* معلومات الاتصال */
+        .contact-info {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 40px;
+            margin: 60px 0;
+            border: 2px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            gap: 30px;
+            text-align: center;
+        }
+        
+        .contact-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .contact-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .contact-details h4 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        
+        .contact-details p {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+        
+        .phone-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        
+        .phone-number:hover {
+            color: var(--secondary);
+            transform: scale(1.05);
+        }
+        
+        /* الفوتر */
+        footer {
+            text-align: center;
+            margin-top: 80px;
+            padding: 40px 20px;
+            border-top: 2px solid var(--border);
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .copyright {
+            font-size: 0.95rem;
+            color: var(--text-light);
+        }
+        
+        .year-badge {
+            background: var(--primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .social-link:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* تأثيرات النصوص المتحركة */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        
+        .delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .delay-3 { animation-delay: 0.3s; opacity: 0; }
+        .delay-4 { animation-delay: 0.4s; opacity: 0; }
+        .delay-5 { animation-delay: 0.5s; opacity: 0; }
+        
+        /* تصميم متجاوب */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header {
+                padding: 30px 15px;
+                border-radius: 12px;
+            }
+            
+            .logo h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                gap: 15px;
+            }
+            
+            .stat-item {
+                padding: 10px;
+                min-width: 110px;
+            }
+            
+            .stat-number {
+                font-size: 1.7rem;
+            }
+            
+            .main-menu {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .menu-card {
+                padding: 24px;
+            }
+            
+            .contact-info {
+                flex-direction: column;
+                padding: 30px 20px;
+                gap: 25px;
+            }
+            
+            .phone-number {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo h1 {
+                font-size: 1.7rem;
+            }
+            
+            .menu-card h3 {
+                font-size: 1.3rem;
+            }
+            
+            .contact-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- الهيدر -->
+        <header class="header animate">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-pills"></i>
+                </div>
+                <h1>صيدلية سارة العجرمي</h1>
+                <p class="tagline">العناية بصحتك هي أولويتنا - راحة المريض فوق كل اعتبار</p>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">خدمة مستمرة</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">🚚</div>
+                    <div class="stat-label">توصيل مجاني</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">📍</div>
+                    <div class="stat-label">كعبيش - فيصل</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- القائمة الرئيسية -->
+        <div class="main-menu">
+            <a href="login.html" class="menu-card animate delay-1">
+                <i class="fas fa-user-circle"></i>
+                <h3>تسجيل الدخول / التسجيل</h3>
+                <p>سجل دخولك أو أنشئ حساباً جديداً لتتمكن من طلب منتجاتنا والتوصيل المجاني</p>
+                <span class="arrow">
+                    ابدأ الآن
+                    <i class="fas fa-arrow-left"></i>
+                </span>
+            </a>
+            
+            <a href="order.html" class="menu-card animate delay-2">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>طلب منتجات</h3>
+                <p>اطلب جميع احتياجاتك الطبية من أدوية ومستلزمات مع إمكانية رفع الروشتة مباشرة</p>
+                <span class="arrow">
+                    ابدأ الطلب
+                    <i class="fas fa-arrow-left"></i>
+                </span>
+            </a>
+            
+            <a href="orderstate.html" class="menu-card animate delay-3">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>متابعة الطلبات</h3>
+                <p>تابع حالة طلباتك السابقة وتتبع توصيلها لحظة بلحظة</p>
+                <span class="arrow">
+                    تابع طلباتك
+                    <i class="fas fa-arrow-left"></i>
+                </span>
+            </a>
+            
+            <a href="profile.html" class="menu-card animate delay-4">
+                <i class="fas fa-id-card"></i>
+                <h3>الملف الشخصي</h3>
+                <p>إدارة معلومات حسابك، العنوان، وبيانات الاتصال</p>
+                <span class="arrow">
+                    عدّل بياناتك
+                    <i class="fas fa-arrow-left"></i>
+                </span>
+            </a>
+        </div>
+
+        <!-- معلومات الاتصال -->
+        <div class="contact-info animate">
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-phone-alt"></i>
+                </div>
+                <div class="contact-details">
+                    <h4>اتصل بنا</h4>
+                    <a href="tel:01234522133" class="phone-number">
+                        01234522133
+                    </a>
+                    <p>متاحون 24 ساعة</p>
+                </div>
+            </div>
+            
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="contact-details">
+                    <h4>موقع الصيدلية</h4>
+                    <p>شارع كعبيش - فيصل</p>
+                    <p>عمارة 62 - الجيزة</p>
+                </div>
+            </div>
+            
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="contact-details">
+                    <h4>خدمة التوصيل</h4>
+                    <p>توصيل مجاني لكعبيش</p>
+                    <p>توصيل لباقي المناطق</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- الفوتر -->
+        <footer>
+            <div class="footer-content">
+                <div class="copyright">
+                    <div class="year-badge">© 2024</div>
+                    <p style="margin-top: 15px;">جميع الحقوق محفوظة لصيدلية سارة العجرمي</p>
+                </div>
+                
+                <div class="social-links">
+                    <a href="https://wa.me/201234522133" class="social-link" target="_blank">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="tel:01234522133" class="social-link">
+                        <i class="fas fa-phone"></i>
+                    </a>
+                    <a href="mailto:sarah.alajrami.pharmacy@gmail.com" class="social-link">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // تأثيرات بسيطة
+        document.addEventListener('DOMContentLoaded', function() {
+            // تأثير النقر على البطاقات
+            const cards = document.querySelectorAll('.menu-card');
+            cards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // تأثير بسيط للنقر
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+
+            // تأثير للهاتف
+            const phoneNumber = document.querySelector('.phone-number');
+            phoneNumber.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const phoneText = this.textContent;
+                const originalText = this.innerHTML;
+                
+                this.innerHTML = '<i class="fas fa-phone"></i> جاري الاتصال...';
+                this.style.color = 'var(--secondary)';
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.style.color = '';
+                    window.location.href = 'tel:' + phoneText.trim();
+                }, 800);
+            });
+
+            // تحديث السنة
+            const yearElement = document.querySelector('.year-badge');
+            const currentYear = new Date().getFullYear();
+            yearElement.textContent = `© ${currentYear}`;
+        });
+    </script>
+</body>
+</html>

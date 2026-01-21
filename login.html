@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - صيدلية سارة العجرمي</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gray-100: #f8fafc;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Cairo', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 450px;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .logo p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .tabs {
+            display: flex;
+            background: var(--gray-100);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 25px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: var(--gray-600);
+        }
+        
+        .tab.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.15);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--gray-800);
+            font-size: 14px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .form-input.error {
+            border-color: var(--danger);
+        }
+        
+        .error-message {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-800);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .message {
+            padding: 14px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-size: 14px;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        .message.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #065f46;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #7f1d1d;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .message.info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #1e40af;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .connection-status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        
+        .connected {
+            background: rgba(16, 185, 129, 0.1);
+            color: #065f46;
+        }
+        
+        .disconnected {
+            background: rgba(239, 68, 68, 0.1);
+            color: #7f1d1d;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* تصميم اختيار الفروع */
+        .branch-selection {
+            margin: 20px 0;
+        }
+        
+        .branches-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .branch-item {
+            padding: 15px;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .branch-item:hover {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.02);
+        }
+        
+        .branch-item.selected {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.05);
+        }
+        
+        .branch-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .branch-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+        
+        .branch-details h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 3px;
+        }
+        
+        .branch-details p {
+            font-size: 13px;
+            color: var(--gray-600);
+        }
+        
+        .checkmark {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--success);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .branch-item.selected .checkmark {
+            opacity: 1;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .logo h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>🏥 صيدلية سارة العجرمي</h1>
+            <p>العناية بصحتك هي أولويتنا</p>
+        </div>
+        
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('login')">تسجيل الدخول</div>
+                <div class="tab" onclick="switchTab('register')">إنشاء حساب</div>
+            </div>
+            
+            <div id="message" class="message"></div>
+            
+            <!-- تسجيل الدخول -->
+            <div id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">رقم الهاتف</label>
+                    <input type="tel" 
+                           id="phone" 
+                           class="form-input" 
+                           placeholder="01XXXXXXXXX"
+                           maxlength="11"
+                           oninput="formatPhone(this)">
+                    <div id="phoneError" class="error-message hidden"></div>
+                </div>
+                
+                <button id="loginBtn" class="btn btn-primary" onclick="handleLogin()">
+                    <span id="loginText">تسجيل الدخول</span>
+                    <span id="loginLoading" class="loading hidden"></span>
+                </button>
+            </div>
+            
+            <!-- إنشاء حساب جديد -->
+            <div id="registerForm" class="hidden">
+                <div class="form-group">
+                    <label class="form-label">الاسم بالكامل</label>
+                    <input type="text" 
+                           id="fullName" 
+                           class="form-input" 
+                           placeholder="الاسم الثلاثي">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">رقم الهاتف</label>
+                    <input type="tel" 
+                           id="regPhone" 
+                           class="form-input" 
+                           placeholder="01XXXXXXXXX"
+                           maxlength="11"
+                           oninput="formatPhone(this)">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">المنطقة</label>
+                    <select id="area" class="form-input" onchange="checkArea()">
+                        <option value="">اختر منطقتك</option>
+                        <option value="1">كعبيش (توصيل مجاني 🚚)</option>
+                        <option value="other">منطقة أخرى</option>
+                    </select>
+                    <input type="text" 
+                           id="customArea" 
+                           class="form-input hidden mt-2" 
+                           placeholder="أدخل اسم منطقتك">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">العنوان التفصيلي</label>
+                    <textarea id="address" 
+                              class="form-input" 
+                              rows="3"
+                              placeholder="شارع، مبنى، شقة، معلم بارز"></textarea>
+                </div>
+                
+                <button id="registerBtn" class="btn btn-primary" onclick="handleRegister()">
+                    <span id="registerText">إنشاء الحساب</span>
+                    <span id="registerLoading" class="loading hidden"></span>
+                </button>
+                
+                <button class="btn btn-secondary" onclick="switchTab('login')">
+                    لدي حساب بالفعل
+                </button>
+            </div>
+            
+            <!-- اختيار الفروع (بعد التسجيل الناجح) -->
+            <div id="branchSelection" class="hidden">
+                <h3 style="text-align: center; margin-bottom: 20px; color: var(--gray-800);">
+                    🏪 اختر الفروع التي تريد التسجيل فيها
+                </h3>
+                <p style="text-align: center; color: var(--gray-600); margin-bottom: 20px;">
+                    يمكنك التسجيل في فرع واحد أو في كلا الفرعين
+                </p>
+                
+                <div id="branchesList" class="branches-list">
+                    <!-- سيتم ملء الفروع هنا -->
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="skipBranchBtn" class="btn btn-secondary" onclick="skipBranchSelection()">
+                        تخطي (سأختار لاحقاً)
+                    </button>
+                    <button id="saveBranchesBtn" class="btn btn-primary" onclick="handleBranchRegistration()">
+                        حفظ الاختيارات
+                    </button>
+                </div>
+            </div>
+            
+            <div id="connectionStatus" class="connection-status disconnected">
+                🔴 جاري التحقق من الاتصال...
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const API_BASE = 'http://localhost:3000/api';
+    let isConnected = false;
+    let currentClient = null;
+    let availableBranches = [];
+    let availableAreas = [];
+    let selectedBranches = [];
+    
+    // ==================== وظائف المساعدة ====================
+    
+    // دالة تنسيق رقم الهاتف
+    function formatPhone(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.startsWith('01')) {
+            value = value.substring(0, 11);
+        } else {
+            value = value.substring(0, 10);
+        }
+        input.value = value;
+    }
+    
+    // عرض رسائل للمستخدم
+    function showMessage(text, type = 'info', duration = 5000) {
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = text;
+        messageDiv.className = `message ${type}`;
+        messageDiv.style.display = 'block';
+        
+        if (duration > 0) {
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, duration);
+        }
+    }
+    
+    // تحديث حالة الاتصال بالسيرفر
+    function updateConnectionStatus(connected, message = '') {
+        const statusDiv = document.getElementById('connectionStatus');
+        isConnected = connected;
+        
+        if (connected) {
+            statusDiv.className = 'connection-status connected';
+            statusDiv.innerHTML = '🟢 متصل بالسيرفر';
+        } else {
+            statusDiv.className = 'connection-status disconnected';
+            statusDiv.innerHTML = `🔴 غير متصل${message ? ' - ' + message : ''}`;
+        }
+    }
+    
+    // إخفاء/إظهار عنصر
+    function toggleElement(id, show) {
+        const element = document.getElementById(id);
+        if (show) {
+            element.classList.remove('hidden');
+        } else {
+            element.classList.add('hidden');
+        }
+    }
+    
+    // تعطيل/تفعيل زر
+    function toggleButton(id, disabled) {
+        const button = document.getElementById(id);
+        button.disabled = disabled;
+    }
+    
+   // تعطيل/تفعيل زر مع مؤشر تحميل - النسخة المصححة
+function toggleButtonLoading(buttonId, isLoading) {
+    const button = document.getElementById(buttonId);
+    if (!button) {
+        console.error(`زر غير موجود: ${buttonId}`);
+        return;
+    }
+    
+    // البحث عن عنصر النص داخل الزر
+    const textSpan = button.querySelector('span:first-child');
+    
+    if (isLoading) {
+        button.disabled = true;
+        
+        // إخفاء النص إذا وجد
+        if (textSpan) {
+            textSpan.classList.add('hidden');
+        }
+        
+        // إضافة مؤشر التحميل إذا لم يكن موجوداً
+        let loadingSpan = button.querySelector('.loading');
+        if (!loadingSpan) {
+            loadingSpan = document.createElement('span');
+            loadingSpan.className = 'loading';
+            button.appendChild(loadingSpan);
+        } else {
+            loadingSpan.classList.remove('hidden');
+        }
+        
+    } else {
+        button.disabled = false;
+        
+        // إظهار النص إذا وجد
+        if (textSpan) {
+            textSpan.classList.remove('hidden');
+        }
+        
+        // إخفاء مؤشر التحميل
+        const loadingSpan = button.querySelector('.loading');
+        if (loadingSpan) {
+            loadingSpan.classList.add('hidden');
+        }
+    }
+}
+
+
+    // التحقق من صحة رقم الهاتف
+    function isValidPhone(phone) {
+        return /^01[0-9]{9}$/.test(phone);
+    }
+    
+    // حفظ بيانات العميل في localStorage
+    // حفظ بيانات العميل في localStorage
+function saveClientData(clientData) {
+    if (!clientData || !clientData.id) {
+        console.error('بيانات العميل غير صالحة:', clientData);
+        return;
+    }
+    
+    localStorage.setItem('client', JSON.stringify(clientData));
+    localStorage.setItem('client_id', clientData.id);
+    localStorage.setItem('auth_time', Date.now());
+    currentClient = clientData;
+    console.log('✅ بيانات العميل محفوظة:', clientData);
+}
+
+
+    // التحقق من تسجيل الدخول السابق
+    function checkPreviousLogin() {
+        const client = localStorage.getItem('client');
+        const authTime = localStorage.getItem('auth_time');
+        
+        if (client && authTime) {
+            const timeDiff = Date.now() - parseInt(authTime);
+            const hoursDiff = timeDiff / (1000 * 60 * 60);
+            
+            // إذا كان أقل من 24 ساعة
+            if (hoursDiff < 24) {
+                const clientData = JSON.parse(client);
+                showMessage(`مرحباً بعودتك ${clientData.name}!`, 'info', 1000);
+                
+                setTimeout(() => {
+                    window.location.href = 'order.html';
+                }, 1000);
+                return true;
+            } else {
+                // مسح البيانات المنتهية
+                clearClientData();
+                return false;
+            }
+        }
+        return false;
+    }
+    
+    // مسح بيانات العميل
+    function clearClientData() {
+        localStorage.removeItem('client');
+        localStorage.removeItem('client_id');
+        localStorage.removeItem('auth_time');
+        localStorage.removeItem('registered_branches');
+        currentClient = null;
+    }
+    
+    // ==================== API Functions ====================
+    
+    // اختبار الاتصال بالسيرفر
+    async function testConnection() {
+        try {
+            console.log('🔍 اختبار اتصال بـ:', API_BASE);
+            
+            const response = await fetch(`${API_BASE}/health`, {
+                method: 'GET',
+                headers: { 
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache'
+                },
+                timeout: 5000
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('✅ اتصال ناجح:', data);
+            updateConnectionStatus(true);
+            return true;
+            
+        } catch (error) {
+            console.error('❌ فشل الاتصال:', error);
+            updateConnectionStatus(false, error.message);
+            showMessage('تعذر الاتصال بالسيرفر. يرجى المحاولة لاحقاً', 'error', 10000);
+            return false;
+        }
+    }
+    
+    // جلب المناطق من API
+    async function loadAreas() {
+        try {
+            console.log('🗺️ جلب المناطق...');
+            
+            const response = await fetch(`${API_BASE}/areas`, {
+                headers: { 'Accept': 'application/json' }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('📊 بيانات المناطق:', data);
+            
+            if (data.success && data.data && data.data.length > 0) {
+                availableAreas = data.data;
+                populateAreaSelect(data.data);
+                return data.data;
+            } else {
+                console.warn('⚠️ لا توجد مناطق متاحة');
+                return [];
+            }
+            
+        } catch (error) {
+            console.error('❌ خطأ في جلب المناطق:', error);
+            showMessage('تعذر تحميل المناطق. سيتم استخدام المنطقة الافتراضية', 'warning');
+            return [];
+        }
+    }
+    
+    // جلب الفروع النشطة
+    async function loadBranches() {
+        try {
+            console.log('🏪 جلب الفروع النشطة...');
+            
+            const response = await fetch(`${API_BASE}/branches`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('📊 بيانات الفروع:', data);
+            
+            if (data.success && data.data && data.data.length > 0) {
+                availableBranches = data.data;
+                return data.data;
+            } else {
+                console.warn('⚠️ لا توجد فروع متاحة');
+                return [];
+            }
+            
+        } catch (error) {
+            console.error('❌ خطأ في جلب الفروع:', error);
+            showMessage('تعذر تحميل الفروع', 'error');
+            return [];
+        }
+    }
+    
+    // التحقق من العميل أو إنشاء حساب جديد
+    // التحقق من العميل أو إنشاء حساب جديد
+async function authenticateClient(phone, name = null, areaId = null, address = null) {
+    try {
+        const payload = { phone };
+        
+        // إذا كان هناك بيانات إضافية فهذا يعني تسجيل جديد
+        if (name && areaId && address) {
+            payload.name = name;
+            payload.area_id = areaId;
+            payload.address = address;
+        }
+        
+        const response = await fetch(`${API_BASE}/clients/auth`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        console.log('📡 استجابة المصادقة:', data);
+        
+        if (!data.success) {
+            throw new Error(data.message || 'فشل المصادقة');
+        }
+        
+        // تأكد من وجود id في البيانات
+        if (!data.data || !data.data.id) {
+            throw new Error('بيانات العميل غير مكتملة');
+        }
+        
+        return data;
+        
+    } catch (error) {
+        console.error('❌ خطأ في المصادقة:', error);
+        throw error;
+    }
+}
+    // تسجيل العميل في فرع
+    // تسجيل العميل في فرع
+async function registerToBranch(clientId, branchId) {
+    try {
+        console.log('📤 إرسال طلب تسجيل في الفرع:', { clientId, branchId });
+        
+        const response = await fetch(`${API_BASE}/clients/register-branch`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                client_id: clientId,
+                branch_id: branchId
+            })
+        });
+        
+        const data = await response.json();
+        console.log('📡 استجابة تسجيل الفرع:', data);
+        
+        if (!data.success) {
+            throw new Error(data.message || 'فشل التسجيل في الفرع');
+        }
+        
+        return data;
+        
+    } catch (error) {
+        console.error('❌ خطأ في التسجيل في الفرع:', error);
+        throw error;
+    }
+}
+    // ==================== UI Functions ====================
+    
+    // تحويل بين التبويبات
+    function switchTab(tab) {
+        const loginTab = document.querySelector('.tab:nth-child(1)');
+        const registerTab = document.querySelector('.tab:nth-child(2)');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const branchSelection = document.getElementById('branchSelection');
+        
+        if (tab === 'login') {
+            loginTab.classList.add('active');
+            registerTab.classList.remove('active');
+            toggleElement('loginForm', true);
+            toggleElement('registerForm', false);
+            toggleElement('branchSelection', false);
+            document.querySelector('.tabs').classList.remove('hidden');
+            document.getElementById('message').style.display = 'none';
+        } else {
+            registerTab.classList.add('active');
+            loginTab.classList.remove('active');
+            toggleElement('registerForm', true);
+            toggleElement('loginForm', false);
+            toggleElement('branchSelection', false);
+            document.querySelector('.tabs').classList.remove('hidden');
+        }
+    }
+    
+    // التحقق من المنطقة المخصصة
+    function checkArea() {
+        const areaSelect = document.getElementById('area');
+        const customArea = document.getElementById('customArea');
+        
+        if (areaSelect.value === 'other') {
+            customArea.classList.remove('hidden');
+            customArea.focus();
+        } else {
+            customArea.classList.add('hidden');
+        }
+    }
+    
+    // ملء قائمة المناطق
+    function populateAreaSelect(areas) {
+        const areaSelect = document.getElementById('area');
+        areaSelect.innerHTML = '<option value="">اختر المنطقة</option>';
+        
+        areas.forEach(area => {
+            const option = document.createElement('option');
+            option.value = area.id;
+            option.textContent = area.name;
+            areaSelect.appendChild(option);
+        });
+        
+        // إضافة خيار "أخرى"
+        const otherOption = document.createElement('option');
+        otherOption.value = 'other';
+        otherOption.textContent = 'منطقة أخرى';
+        areaSelect.appendChild(otherOption);
+    }
+    
+    // عرض قائمة الفروع للاختيار
+    function showBranchSelection(branches) {
+        const branchesList = document.getElementById('branchesList');
+        const branchSelection = document.getElementById('branchSelection');
+        
+        // مسح القائمة الحالية
+        branchesList.innerHTML = '';
+        
+        // إضافة كل فرع
+        branches.forEach(branch => {
+            const branchItem = document.createElement('div');
+            branchItem.className = 'branch-item';
+            branchItem.dataset.id = branch.id;
+            
+            branchItem.innerHTML = `
+                <div class="branch-info">
+                    <div class="branch-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div class="branch-details">
+                        <h4>${branch.name}</h4>
+                        <p>${branch.address || 'كعبيش - فيصل'}</p>
+                        <p style="color: #10b981; font-size: 12px; margin-top: 3px;">
+                            ${branch.phone || '01234522133'}
+                        </p>
+                    </div>
+                </div>
+                <div class="checkmark">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            `;
+            
+            branchItem.onclick = () => toggleBranchSelection(branch.id, branchItem);
+            branchesList.appendChild(branchItem);
+        });
+        
+        // إظهار قسم اختيار الفروع
+        toggleElement('branchSelection', true);
+        toggleElement('loginForm', false);
+        toggleElement('registerForm', false);
+        document.querySelector('.tabs').classList.add('hidden');
+    }
+    
+    // تبديل اختيار الفرع
+    function toggleBranchSelection(branchId, element) {
+        const index = selectedBranches.indexOf(branchId);
+        
+        if (index === -1) {
+            // إضافة الفرع
+            selectedBranches.push(branchId);
+            element.classList.add('selected');
+        } else {
+            // إزالة الفرع
+            selectedBranches.splice(index, 1);
+            element.classList.remove('selected');
+        }
+        
+        // تحديث زر الحفظ
+        const saveBtn = document.getElementById('saveBranchesBtn');
+        saveBtn.disabled = selectedBranches.length === 0;
+        
+        console.log('الفروع المختارة:', selectedBranches);
+    }
+    
+    // ==================== Main Functions ====================
+    
+    // عملية تسجيل الدخول
+    async function handleLogin() {
+        const phone = document.getElementById('phone').value.trim();
+        const phoneError = document.getElementById('phoneError');
+        
+        // إعادة تعيين الأخطاء
+        phoneError.classList.add('hidden');
+        document.getElementById('phone').classList.remove('error');
+        
+        // التحقق من رقم الهاتف
+        if (!phone) {
+            phoneError.textContent = 'يرجى إدخال رقم الهاتف';
+            phoneError.classList.remove('hidden');
+            document.getElementById('phone').classList.add('error');
+            return;
+        }
+        
+        if (!isValidPhone(phone)) {
+            phoneError.textContent = 'يرجى إدخال رقم هاتف صحيح (11 رقماً)';
+            phoneError.classList.remove('hidden');
+            document.getElementById('phone').classList.add('error');
+            return;
+        }
+        
+        toggleButtonLoading('loginBtn', true);
+        showMessage('جاري التحقق...', 'info');
+        
+        try {
+            const result = await authenticateClient(phone);
+            
+            if (result.is_new) {
+                showMessage('أنت عميل جديد! يرجى إكمال بيانات التسجيل', 'info');
+                switchTab('register');
+                document.getElementById('regPhone').value = phone;
+            } else {
+                showMessage(`مرحباً ${result.data.name}!`, 'success', 2000);
+                saveClientData(result.data);
+                
+                setTimeout(() => {
+                    window.location.href = 'order.html';
+                }, 1500);
+            }
+            
+        } catch (error) {
+            showMessage(error.message || 'حدث خطأ أثناء تسجيل الدخول', 'error');
+        } finally {
+            toggleButtonLoading('loginBtn', false);
+        }
+    }
+    
+    // عملية التسجيل
+    // عملية التسجيل (محدثة)
+async function handleRegister() {
+    const name = document.getElementById('fullName')?.value.trim();
+    const phone = document.getElementById('regPhone')?.value.trim();
+    const areaSelect = document.getElementById('area');
+    const customArea = document.getElementById('customArea')?.value.trim();
+    const address = document.getElementById('address')?.value.trim();
+    
+    // التحقق من البيانات
+    const errors = [];
+    
+    if (!name) errors.push('الاسم الكامل');
+    if (!phone || !isValidPhone(phone)) errors.push('رقم الهاتف');
+    if (!areaSelect?.value) errors.push('المنطقة');
+    if (areaSelect?.value === 'other' && !customArea) errors.push('اسم المنطقة المخصصة');
+    if (!address) errors.push('العنوان التفصيلي');
+    
+    if (errors.length > 0) {
+        showMessage(`يرجى إدخال: ${errors.join(', ')}`, 'error');
+        return;
+    }
+    
+    // تحديد area_id
+    let areaId = areaSelect.value === 'other' ? 2 : parseInt(areaSelect.value);
+    
+    toggleButtonLoading('registerBtn', true);
+    showMessage('جاري إنشاء الحساب...', 'info');
+    
+    try {
+        const result = await authenticateClient(phone, name, areaId, address);
+        console.log('✅ نتيجة التسجيل:', result);
+        
+        if (!result.data || !result.data.id) {
+            throw new Error('لم يتم استلام معرف العميل من السيرفر');
+        }
+        
+        showMessage(`تم إنشاء حسابك بنجاح ${result.data.name}!`, 'success', 2000);
+        
+        // حفظ بيانات العميل
+        saveClientData(result.data);
+        currentClient = result.data;
+        
+        console.log('👤 العميل الحالي:', currentClient);
+        
+        // جلب الفروع وعرضها للاختيار
+        const branches = await loadBranches();
+        if (branches.length > 0) {
+            showBranchSelection(branches);
+        } else {
+            // إذا لم توجد فروع، تخطي مباشرة
+            setTimeout(() => {
+                window.location.href = 'order.html';
+            }, 1500);
+        }
+        
+    } catch (error) {
+        console.error('❌ خطأ في التسجيل:', error);
+        showMessage(error.message || 'حدث خطأ أثناء إنشاء الحساب', 'error');
+    } finally {
+        toggleButtonLoading('registerBtn', false);
+    }
+}
+
+    // تخطي اختيار الفروع
+    function skipBranchSelection() {
+        showMessage('يمكنك التسجيل في الفروع لاحقاً من خلال صفحة الملف الشخصي', 'info');
+        
+        setTimeout(() => {
+            window.location.href = 'order.html';
+        }, 1500);
+    }
+    
+    // التسجيل في الفروع المختارة
+    // التسجيل في الفروع المختارة
+async function handleBranchRegistration() {
+    if (selectedBranches.length === 0) {
+        showMessage('يرجى اختيار فرع واحد على الأقل', 'error');
+        return;
+    }
+    
+    // تحقق من وجود العميل
+    if (!currentClient || !currentClient.id) {
+        showMessage('بيانات العميل غير متوفرة. يرجى إعادة التسجيل', 'error');
+        
+        // محاولة استرجاع العميل من localStorage
+        const savedClient = localStorage.getItem('client');
+        if (savedClient) {
+            try {
+                currentClient = JSON.parse(savedClient);
+                console.log('🔄 تم استرجاع العميل من localStorage:', currentClient);
+            } catch (e) {
+                console.error('❌ خطأ في تحليل بيانات العميل:', e);
+            }
+        }
+        
+        if (!currentClient || !currentClient.id) {
+            showMessage('يرجى إعادة تسجيل الدخول', 'error');
+            setTimeout(() => {
+                switchTab('login');
+            }, 2000);
+            return;
+        }
+    }
+    
+    console.log('👤 تسجيل العميل في الفروع:', {
+        clientId: currentClient.id,
+        clientName: currentClient.name,
+        selectedBranches
+    });
+    
+    toggleButtonLoading('saveBranchesBtn', true);
+    showMessage('جاري التسجيل في الفروع المختارة...', 'info');
+    
+    try {
+        const promises = selectedBranches.map(branchId => {
+            console.log(`📝 تسجيل العميل ${currentClient.id} في الفرع ${branchId}`);
+            return registerToBranch(currentClient.id, branchId);
+        });
+        
+        const results = await Promise.all(promises);
+        console.log('✅ نتائج التسجيل في الفروع:', results);
+        
+        showMessage(`تم التسجيل في ${selectedBranches.length} فرع بنجاح!`, 'success', 2000);
+        
+        // حفظ الفروع المختارة
+        localStorage.setItem('registered_branches', JSON.stringify(selectedBranches));
+        
+        // الانتقال بعد تأخير
+        setTimeout(() => {
+            window.location.href = 'order.html';
+        }, 1500);
+        
+    } catch (error) {
+        console.error('❌ خطأ في التسجيل في الفروع:', error);
+        showMessage('حدث خطأ أثناء التسجيل في الفروع. سيتم تخطي هذه الخطوة', 'error');
+        
+        // تخطي المباشرة إلى صفحة الطلبات
+        setTimeout(() => {
+            toggleButtonLoading('saveBranchesBtn', false);
+            window.location.href = 'order.html';
+        }, 2000);
+    }
+}
+    // ==================== Event Listeners ====================
+    
+    // عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', async () => {
+        console.log('🔄 تحميل صفحة تسجيل الدخول...');
+    
+    // التحقق من تسجيل الدخول السابق
+    if (checkPreviousLogin()) {
+        return;
+    }
+    
+    // اختبار الاتصال بالسيرفر
+    const isConnected = await testConnection();
+    
+    if (isConnected) {
+        // جلب المناطق
+        await loadAreas();
+    }
+    
+    // تحميل العميل من localStorage إن وجد
+    const savedClient = localStorage.getItem('client');
+    if (savedClient) {
+        try {
+            currentClient = JSON.parse(savedClient);
+            console.log('👤 تم تحميل العميل من localStorage:', currentClient);
+        } catch (e) {
+            console.error('❌ خطأ في تحميل بيانات العميل:', e);
+        }
+    }
+    
+    // تفعيل الإدخال عند الضغط على Enter
+    document.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            if (!document.getElementById('loginForm').classList.contains('hidden')) {
+                handleLogin();
+            } else if (!document.getElementById('registerForm').classList.contains('hidden')) {
+                handleRegister();
+            }
+        }
+    });
+});
+    
+    // تعريف الدوال على window للاستخدام في HTML
+    window.formatPhone = formatPhone;
+    window.switchTab = switchTab;
+    window.checkArea = checkArea;
+    window.checkClient = handleLogin;
+    window.registerClient = handleRegister;
+    window.skipBranchSelection = skipBranchSelection;
+    window.registerToBranches = handleBranchRegistration;
+</script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</body>
+</html>
+<!-- cilent don`t care about your code 
+--- made by adham hossam
+--- ignore the code above
+if you can read this line you are good developer
+if you want any job just contact me in alightbolt.github.io/adham-website/
+--- thank you for your time
+-->
