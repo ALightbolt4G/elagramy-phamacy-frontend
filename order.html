@@ -1097,10 +1097,9 @@
         </div>
         
         <div class="branch-modal-body">
-            <p style="color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
-                مرحباً <strong>${clientData?.name}</strong>،
-                يرجى اختيار الفرع الذي ترغب بالشراء منه:
-            </p>
+            <p id="welcomeMessage" style="color: var(--gray-600); margin-bottom: 20px; line-height: 1.6;">
+    جاري تحميل البيانات...
+</p>
             
             <div id="branchesList" class="branches-list">
                 <!-- سيتم ملؤها ديناميكياً -->
@@ -2792,6 +2791,24 @@ function getBranchName(branchId) {
     );
     return branch?.branches?.name || `الفرع ${branchId}`;
 }
+// دالة لتحديث رسالة الترحيب
+function updateWelcomeMessage() {
+    if (clientData) {
+        document.getElementById('welcomeMessage').innerHTML = `
+            مرحباً <strong>${clientData.name}</strong>،
+            يرجى اختيار الفرع الذي ترغب بالشراء منه:
+        `;
+    }
+}
+// استدعاء الدالة بعد تحميل DOM بالكامل
+document.addEventListener('DOMContentLoaded', function() {
+    // انتظر قليلاً لتحميل clientData
+    setTimeout(() => {
+        if (clientData) {
+            updateWelcomeMessage();
+        }
+    }, 100);
+});
 </script>
 </body>
 </html>
