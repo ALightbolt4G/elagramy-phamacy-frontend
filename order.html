@@ -1595,37 +1595,16 @@
         // ============ الوظائف الأساسية ============
         
         function normalizeProductData(product) {
-            if (!product) return null;
-            
-            // تأكد من أن product.category هو كائن وليس مصفوفة
-            let categoryName = '';
-            if (product.category) {
-                if (typeof product.category === 'object' && product.category.name) {
-                    categoryName = product.category.name;
-                } else if (Array.isArray(product.category) && product.category.length > 0 && product.category[0].name) {
-                    categoryName = product.category[0].name;
-                } else if (typeof product.category === 'string') {
-                    categoryName = product.category;
-                }
-            }
-            
-            const normalized = {
-                id: product.id || Math.random() * 10000,
-                type: product.product_category || 'drug',
-                name: product.name || product.display_name || 'منتج بدون اسم',
-                price: parseFloat(product.price || product.sale_price || 0),
-                description: product.description || 'لا يوجد وصف متاح',
-                image_url: product.image_url || product.image || '',
-                branch_product_id: product.branch_product_id || product.id,
-                category: categoryName,
-                active_ingredient: product.active_ingredient || '',
-                concentration: product.concentration || '',
-                package_size: product.package_size || ''
-            };
-            
-            return normalized;
-        }
-        
+    if (!product) return null;
+    
+    return {
+        ...product, // نمرر كل البيانات الأصلية بما فيها active_ingredient و description
+        id: product.id,
+        name: product.name || 'منتج بدون اسم',
+        price: parseFloat(product.price || 0),
+        branch_product_id: product.branch_product_id || product.id
+    };
+}
         async function loadCategories() {
             try {
                 const response = await fetch(`${API_BASE}/products/categories`);
@@ -1641,28 +1620,12 @@
         }
         
         function updateCategoryFilter() {
-            const categoryFilter = document.getElementById('categoryFilter');
-            
-            // إضافة خيار "جميع الفئات"
-            categoryFilter.innerHTML = '<option value="all">جميع الفئات</option>';
-            
-            // إضافة الفئات
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.id;
-                option.textContent = category.name;
-                categoryFilter.appendChild(option);
-            });
-            
-            // إضافة حدث تغيير الفلتر
-            categoryFilter.addEventListener('change', function() {
-                selectedCategory = this.value;
-                currentPage = 1;
-                allProducts = [];
-                loadProducts();
-            });
-        }
-        
+    const categoryFilter = document.getElementById('categoryFilter');
+    // جعلها خيار واحد فقط كما طلبت
+    categoryFilter.innerHTML = '<option value="all">جميع الفئات</option>';
+    
+    // لا نحتاج لـ AddEventListener هنا لأن الفلترة أصبحت ثابتة
+}
         async function loadProducts(page = 1, isLoadMore = false) {
             if (!selectedBranchId || isLoading) return;
             
@@ -1773,57 +1736,57 @@
         }
         
         function displayProducts(products) {
-            const container = document.getElementById('productsContainer');
-            
-            if (!Array.isArray(products) || products.length === 0) {
-                return;
-            }
-            
-            // إذا كانت هذه أول صفحة، نمسح المحتوى القديم
-            if (currentPage === 1) {
-                container.innerHTML = '';
-            }
-            
-            products.forEach((product, index) => {
-                if (!product || typeof product !== 'object') {
-                    return;
-                }
-                
-                const productCard = document.createElement('div');
-                productCard.className = 'product-card';
-                
-                const prodType = product.type || 'drug';
-                const price = parseFloat(product.price || 0);
-                const formattedPrice = price.toFixed(2);
-                const name = product.name || 'منتج بدون اسم';
-                const description = product.description || 'لا يوجد وصف';
-                
-                productCard.innerHTML = `
-                    <span class="product-type ${prodType === 'drug' ? 'drug-type' : 'cosmetic-type'}">
-                        ${prodType === 'drug' ? 'دواء' : 'مستحضر'}
-                    </span>
-                    <div class="product-image">
-                        ${product.image_url ? 
-                            `<img src="${product.image_url}" alt="${name}" loading="lazy" style="padding: 20px;">` : 
-                            `<i class="fas ${prodType === 'drug' ? 'fa-capsules' : 'fa-spray-can-sparkles'}"></i>`
-                        }
-                    </div>
-                    <div class="product-info">
-                        <div class="product-name">${name}</div>
-                        ${product.category ? `<div class="category-badge">${product.category}</div>` : ''}
-                        <div class="product-description">${description}</div>
-                        <div class="product-price">${formattedPrice} جنيه</div>
-                    </div>
-                    <button class="add-to-cart" onclick="openQuantityModal(${product.id}, '${prodType}')">
-                        <i class="fas fa-cart-plus"></i>
-                        إضافة للسلة
-                    </button>
-                `;
-                
-                container.appendChild(productCard);
-            });
-        }
+    const container = document.getElementById('productsContainer');
+    
+    if (currentPage === 1) {
+        container.innerHTML = '';
+    }
+    
+    products.forEach(product => {
+        // تحديد النوع والبيانات الخاصة بكل فئة
+        const isDrug = product.active_ingredient !== undefined && product.active_ingredient !== '';
+        const badgeText = isDrug ? 'دواء' : 'مستحضر';
+        const badgeClass = isDrug ? 'drug-type' : 'cosmetic-type';
         
+        // المعلومة المطلوبة: مادة فعالة للدواء، وصف للمستحضر
+        const specialInfo = isDrug ? 
+            (product.active_ingredient ? `المادة الفعالة: ${product.active_ingredient}` : 'دواء') : 
+            (product.description || 'مستحضر تجميلي');
+
+        const productCard = document.createElement('div');
+        productCard.className = 'product-card';
+        
+        productCard.innerHTML = `
+            <span class="product-type ${badgeClass}">
+                ${badgeText}
+            </span>
+
+            <div class="product-image">
+                ${product.image_url ? 
+                    `<img src="${product.image_url}" alt="${product.name}" loading="lazy">` : 
+                    `<i class="fas ${isDrug ? 'fa-capsules' : 'fa-spray-can-sparkles'}"></i>`
+                }
+            </div>
+
+            <div class="product-info">
+                <div class="product-name">${product.name}</div>
+                
+                <div class="product-description" style="color: var(--primary); font-weight: 500;">
+                    ${specialInfo}
+                </div>
+
+                <div class="product-price">${parseFloat(product.price).toFixed(2)} جنيه</div>
+            </div>
+
+            <button class="add-to-cart" onclick="openQuantityModal(${product.id}, '${isDrug ? 'drug' : 'cosmetic'}')">
+                <i class="fas fa-cart-plus"></i>
+                إضافة للسلة
+            </button>
+        `;
+        
+        container.appendChild(productCard);
+    });
+}
         // ============ البحث ============
         
         document.getElementById('mainSearchInput').addEventListener('input', function(e) {
@@ -2603,22 +2566,25 @@ async function uploadOrderImages(orderId) {
     const checkoutText = document.getElementById('checkoutText');
     const checkoutLoading = document.getElementById('checkoutLoading');
     
+    // التحقق من وجود أصناف في السلة
     if (cart.length === 0) {
         showMessage('السلة فارغة. أضف منتجات أولاً', 'error');
         return;
     }
     
+    // التحقق من اختيار الفرع
     if (!selectedBranchId) {
         showMessage('يرجى اختيار فرع أولاً', 'error');
         return;
     }
     
+    // حالة التحميل
     checkoutBtn.disabled = true;
     checkoutText.style.display = 'none';
     checkoutLoading.style.display = 'inline-block';
     
     try {
-        // إعداد بيانات الطلب
+        // 1. إعداد بيانات الطلب للـ API
         const orderData = {
             client_id: clientId,
             branch_id: selectedBranchId,
@@ -2630,14 +2596,10 @@ async function uploadOrderImages(orderId) {
             customer_notes: document.getElementById('prescription')?.value || ''
         };
         
-        console.log('🛒 بيانات الطلب المرسلة:', orderData);
-        
-        // إرسال الطلب أولاً
+        // 2. إرسال الطلب لقاعدة البيانات أولاً (O(log n) logic)
         const response = await fetch(`${API_BASE}/orders`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
         });
         
@@ -2645,42 +2607,72 @@ async function uploadOrderImages(orderId) {
         
         if (result.success) {
             const orderId = result.data.order_id;
-            
-            // إذا كان هناك صور، نرفعها بعد إنشاء الطلب
+
+            // 3. رفع الصور إن وجدت
             if (prescriptionImages.length > 0) {
                 await uploadOrderImages(orderId);
             }
-            
-            showMessage('تم تأكيد طلبك بنجاح! سنتواصل معك قريباً.', 'success');
-            
-            // إعادة تعيين البيانات
+
+            // 4. منطق الواتساب (خاص بالفرع رقم 2 فقط)
+            if (selectedBranchId === 2) {
+                const phoneNumber = "201234522133";
+                let totalAmount = 0;
+
+                // تجهيز نص الرسالة بتفاصيل كاملة
+                let msg = `*طلب جديد من صيدلية سارة العجرمي*%0A`;
+                msg += `*رقم الطلب:* ${orderId}%0A`;
+                msg += `*العميل:* ${clientData.name}%0A`;
+                msg += `*العنوان:* ${clientData.address || 'غير محدد'}%0A`;
+                msg += `---------------------------%0A`;
+
+                cart.forEach((item, index) => {
+                    const itemTotal = item.price * item.quantity;
+                    totalAmount += itemTotal;
+                    
+                    // جلب المنتج لعرض المادة الفعالة
+                    const product = getProductById(item.product_id, item.product_type);
+                    const activeIngredient = (item.product_type === 'drug' && product?.active_ingredient) 
+                                             ? ` [${product.active_ingredient}]` : '';
+
+                    msg += `${index + 1}. *${item.name}*${activeIngredient}%0A`;
+                    msg += `   الكمية: ${item.quantity} × ${item.price.toFixed(2)} = ${itemTotal.toFixed(2)} ج.م%0A`;
+                });
+
+                msg += `---------------------------%0A`;
+                msg += `*الإجمالي النهائي:* ${totalAmount.toFixed(2)} جنيه%0A`;
+
+                if (orderData.customer_notes) {
+                    msg += `*ملاحظات:* ${orderData.customer_notes}%0A`;
+                }
+
+                // فتح الواتساب
+                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${msg}`;
+                window.open(whatsappUrl, '_blank');
+                
+                showMessage('تم تسجيل الطلب وإرساله للواتساب بنجاح ✓', 'success');
+            } else {
+                // الفروع الأخرى
+                showMessage('تم تسجيل طلبك بنجاح! (ميزة الواتساب قيد التطوير لهذا الفرع)', 'info');
+            }
+
+            // 5. إعادة تعيين السلة والواجهة
             cart = [];
             prescriptionImages = [];
             updateCartBadge();
             updateCartDisplay();
             
-            // ✅ الإصلاح هنا: التحقق من وجود العنصر قبل تحديثه
-            const imagePreview = document.getElementById('imagePreview');
-            if (imagePreview) {
-                imagePreview.innerHTML = '';
-            }
-            
-            const prescriptionTextarea = document.getElementById('prescription');
-            if (prescriptionTextarea) {
-                prescriptionTextarea.value = '';
-            }
+            if (document.getElementById('imagePreview')) document.getElementById('imagePreview').innerHTML = '';
+            if (document.getElementById('prescription')) document.getElementById('prescription').value = '';
             
             localStorage.removeItem('saved_cart');
-            
-            setTimeout(() => {
-                closeCart();
-            }, 2000);
+            setTimeout(() => closeCart(), 2000);
+
         } else {
             throw new Error(result.message || 'فشل في تأكيد الطلب');
         }
     } catch (error) {
-        console.error('❌ خطأ في تأكيد الطلب:', error);
-        showMessage('حدث خطأ أثناء تأكيد الطلب: ' + error.message, 'error');
+        console.error('❌ خطأ في تنفيذ الطلب:', error);
+        showMessage('حدث خطأ: ' + error.message, 'error');
     } finally {
         checkoutBtn.disabled = false;
         checkoutText.style.display = 'inline';
@@ -2688,6 +2680,71 @@ async function uploadOrderImages(orderId) {
     }
 }
 
+function sendOrderToWhatsApp() {
+    // 1. التأكد من أن الميزة تعمل فقط للفرع رقم 2 (فرعك الحالي)
+    if (selectedBranchId !== 2) {
+        showMessage('ميزة إرسال الطلب عبر الواتساب قيد التطوير لهذا الفرع حالياً', 'info');
+        return;
+    }
+
+    // 2. التحقق من وجود بيانات العميل وسلة المشتريات
+    if (!clientData || cart.length === 0) {
+        showMessage('خطأ في البيانات: السلة فارغة أو لم يتم تسجيل الدخول', 'error');
+        return;
+    }
+
+    // 3. رقم واتساب الفرع رقم 2 (بصيغة دولية بدون +)
+    const phoneNumber = "201234522133"; 
+
+    // 4. بناء هيكل الرسالة (تفصيلي جداً)
+    let message = `*📦 طلب جديد من صيدلية سارة العجرمي*%0A`;
+    message += `━━━━━━━━━━━━━━━━━━%0A`;
+    message += `*👤 العميل:* ${clientData.name}%0A`;
+    message += `*📍 العنوان:* ${clientData.address || 'غير محدد'}%0A`;
+    message += `*📞 رقم الهاتف:* ${clientData.phone || 'غير مسجل'}%0A`;
+    message += `*⏰ التاريخ:* ${new Date().toLocaleString('ar-EG')}%0A`;
+    message += `━━━━━━━━━━━━━━━━━━%0A`;
+    message += `*🛒 تفاصيل المنتجات:*%0A%0A`;
+
+    // 5. إضافة الأصناف مع تفاصيلها الفنية (المادة الفعالة / السعر / الكمية)
+    cart.forEach((item, index) => {
+        // جلب البيانات الأصلية للمنتج للحصول على المادة الفعالة أو الوصف
+        const product = getProductById(item.product_id, item.product_type);
+        
+        // تمييز الأدوية بالمادة الفعالة
+        let extraDetails = "";
+        if (item.product_type === 'drug' && product?.active_ingredient) {
+            extraDetails = ` _[مادة فعالة: ${product.active_ingredient}]_`;
+        }
+
+        const itemTotal = (item.price * item.quantity).toFixed(2);
+        
+        message += `${index + 1}. *${item.name}*${extraDetails}%0A`;
+        message += `   🔹 الكمية: ${item.quantity} × ${item.price.toFixed(2)} = ${itemTotal} ج.م%0A%0A`;
+    });
+
+    // 6. حساب الإجمالي النهائي
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    message += `━━━━━━━━━━━━━━━━━━%0A`;
+    message += `*💰 الإجمالي النهائي:* ${total.toFixed(2)} جنيه مصري%0A`;
+    
+    // 7. إضافة الملاحظات إن وجدت
+    const notes = document.getElementById('prescription')?.value.trim();
+    if (notes) {
+        message += `*📝 ملاحظات:* ${notes}%0A`;
+    }
+    
+    message += `━━━━━━━━━━━━━━━━━━%0A`;
+    message += `_تم إرسال الطلب عبر النظام التقني للصيدلية_`;
+
+    // 8. إنشاء الرابط وفتحه
+    // نستخدم encodeURI لضمان معالجة الرموز والمسافات بشكل صحيح
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+
+    // فتح الرابط في نافذة جديدة
+    window.open(whatsappUrl, '_blank');
+}
     </script>
 </body>
 </html>
