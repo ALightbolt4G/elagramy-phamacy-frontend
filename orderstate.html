@@ -176,53 +176,227 @@
             color: var(--primary-light);
         }
         
-        /* حالة الطلب */
-        .order-status {
-            padding: 8px 20px;
-            border-radius: 25px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-        }
+/* حالة الطلب مع تأثيرات مضيئة */
+.order-status {
+    padding: 8px 20px !important;
+    border-radius: 25px !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: 2px solid !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* تأثير الخلفية المتوهجة */
+.order-status::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -2px !important;
+    left: -2px !important;
+    right: -2px !important;
+    bottom: -2px !important;
+    border-radius: 27px !important;
+    z-index: -1 !important;
+    opacity: 0.5 !important;
+    transition: opacity 0.3s !important;
+}
+
+.order-status:hover::before {
+    opacity: 0.8 !important;
+}
+
+/* الحالة: قيد الانتظار - أصفر براق */
+.status-pending { 
+    background: linear-gradient(135deg, #fff9db 0%, #ffec99 100%) !important;
+    color: #e67700 !important;
+    border-color: #ffd43b !important;
+    box-shadow: 0 4px 20px rgba(255, 212, 59, 0.3),
+                inset 0 1px 3px rgba(255, 255, 255, 0.5) !important;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+}
+
+.status-pending::before {
+    background: linear-gradient(135deg, #ffd43b 0%, #ffa94d 100%) !important;
+}
+
+.status-pending:hover {
+    box-shadow: 0 6px 25px rgba(255, 212, 59, 0.4),
+                inset 0 1px 3px rgba(255, 255, 255, 0.6) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* الحالة: تم التأكيد - أزرق براق */
+.status-confirmed { 
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+    color: #1565c0 !important;
+    border-color: #64b5f6 !important;
+    box-shadow: 0 4px 20px rgba(100, 181, 246, 0.3),
+                inset 0 1px 3px rgba(255, 255, 255, 0.5) !important;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+}
+
+.status-confirmed::before {
+    background: linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%) !important;
+}
+
+.status-confirmed:hover {
+    box-shadow: 0 6px 25px rgba(100, 181, 246, 0.4),
+                inset 0 1px 3px rgba(255, 255, 255, 0.6) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* الحالة: قيد التحضير - بنفسجي براق */
+.status-preparing { 
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%) !important;
+    color: #7b1fa2 !important;
+    border-color: #ba68c8 !important;
+    box-shadow: 0 4px 20px rgba(186, 104, 200, 0.3),
+                inset 0 1px 3px rgba(255, 255, 255, 0.5) !important;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+}
+
+.status-preparing::before {
+    background: linear-gradient(135deg, #ba68c8 0%, #ab47bc 100%) !important;
+}
+
+.status-preparing:hover {
+    box-shadow: 0 6px 25px rgba(186, 104, 200, 0.4),
+                inset 0 1px 3px rgba(255, 255, 255, 0.6) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* الحالة: في الطريق - سماوي براق */
+.status-on_the_way { 
+    background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%) !important;
+    color: #0277bd !important;
+    border-color: #4fc3f7 !important;
+    box-shadow: 0 4px 20px rgba(79, 195, 247, 0.3),
+                inset 0 1px 3px rgba(255, 255, 255, 0.5) !important;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+}
+
+.status-on_the_way::before {
+    background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%) !important;
+}
+
+.status-on_the_way:hover {
+    box-shadow: 0 6px 25px rgba(79, 195, 247, 0.4),
+                inset 0 1px 3px rgba(255, 255, 255, 0.6) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* الحالة: تم التسليم - أخضر براق */
+.status-delivered { 
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%) !important;
+    color: #2e7d32 !important;
+    border-color: #81c784 !important;
+    box-shadow: 0 4px 20px rgba(129, 199, 132, 0.3),
+                inset 0 1px 3px rgba(255, 255, 255, 0.5) !important;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+}
+
+.status-delivered::before {
+    background: linear-gradient(135deg, #81c784 0%, #66bb6a 100%) !important;
+}
+
+.status-delivered:hover {
+    box-shadow: 0 6px 25px rgba(129, 199, 132, 0.4),
+                inset 0 1px 3px rgba(255, 255, 255, 0.6) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* الحالة: ملغي - أحمر براق */
+.status-cancelled { 
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%) !important;
+    color: #c62828 !important;
+    border-color: #ef9a9a !important;
+    box-shadow: 0 4px 20px rgba(239, 154, 154, 0.3),
+                inset 0 1px 3px rgba(255, 255, 255, 0.5) !important;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+}
+
+.status-cancelled::before {
+    background: linear-gradient(135deg, #ef9a9a 0%, #ef5350 100%) !important;
+}
+
+.status-cancelled:hover {
+    box-shadow: 0 6px 25px rgba(239, 154, 154, 0.4),
+                inset 0 1px 3px rgba(255, 255, 255, 0.6) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* تأثير النبض للحالات النشطة */
+@keyframes pulse {
+    0% { 
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1),
+                    0 0 0 rgba(var(--color-rgb), 0); 
+    }
+    50% { 
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1),
+                    0 0 15px rgba(var(--color-rgb), 0.6); 
+    }
+    100% { 
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1),
+                    0 0 0 rgba(var(--color-rgb), 0); 
+    }
+}
+
+.status-pending {
+    --color-rgb: 255, 212, 59;
+    animation: pulse 2s infinite !important;
+}
+
+.status-confirmed {
+    --color-rgb: 100, 181, 246;
+    animation: pulse 2s infinite !important;
+}
+
+.status-preparing {
+    --color-rgb: 186, 104, 200;
+    animation: pulse 2s infinite !important;
+}
+
+.status-on_the_way {
+    --color-rgb: 79, 195, 247;
+    animation: pulse 2s infinite !important;
+}
+
+/* تأثير التألق للحالات المكتملة */
+@keyframes glow {
+    0% { 
+        box-shadow: 0 4px 20px rgba(129, 199, 132, 0.3),
+                    0 0 0 rgba(129, 199, 132, 0); 
+    }
+    50% { 
+        box-shadow: 0 4px 20px rgba(129, 199, 132, 0.3),
+                    0 0 20px rgba(129, 199, 132, 0.4); 
+    }
+    100% { 
+        box-shadow: 0 4px 20px rgba(129, 199, 132, 0.3),
+                    0 0 0 rgba(129, 199, 132, 0); 
+    }
+}
+
+.status-delivered {
+    animation: glow 3s infinite !important;
+}
+
+/* تأثير الرجيج للحالات الملغاة */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+}
+
+.status-cancelled:hover {
+    animation: shake 0.5s ease-in-out !important;
+}
         
-        .status-pending { 
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            color: #92400e;
-            border: 1px solid #fcd34d;
-        }
-        
-        .status-confirmed { 
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            color: #1e40af;
-            border: 1px solid #93c5fd;
-        }
-        
-        .status-preparing { 
-            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
-            color: #5b21b6;
-            border: 1px solid #d8b4fe;
-        }
-        
-        .status-on_the_way { 
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            color: #0369a1;
-            border: 1px solid #7dd3fc;
-        }
-        
-        .status-delivered { 
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-            color: #166534;
-            border: 1px solid #86efac;
-        }
-        
-        .status-cancelled { 
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
         
         /* تفاصيل الطلب */
         .order-details {
@@ -548,6 +722,8 @@
                 font-size: 3.5rem;
             }
         }
+
+        
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -640,45 +816,52 @@
         }
         
         function getStatusInfo(status) {
-            const statuses = {
-                'pending': { 
-                    text: 'قيد الانتظار', 
-                    class: 'status-pending',
-                    icon: 'fas fa-clock'
-                },
-                'confirmed': { 
-                    text: 'تم التأكيد', 
-                    class: 'status-confirmed',
-                    icon: 'fas fa-check-circle'
-                },
-                'preparing': { 
-                    text: 'قيد التحضير', 
-                    class: 'status-preparing',
-                    icon: 'fas fa-box'
-                },
-                'on_the_way': { 
-                    text: 'في الطريق', 
-                    class: 'status-on_the_way',
-                    icon: 'fas fa-truck'
-                },
-                'delivered': { 
-                    text: 'تم التسليم', 
-                    class: 'status-delivered',
-                    icon: 'fas fa-check-double'
-                },
-                'cancelled': { 
-                    text: 'ملغي', 
-                    class: 'status-cancelled',
-                    icon: 'fas fa-times-circle'
-                }
-            };
-            return statuses[status] || { 
-                text: status, 
-                class: 'status-pending',
-                icon: 'fas fa-question-circle'
-            };
+    const statuses = {
+        'pending': { 
+            text: 'قيد الانتظار', 
+            class: 'status-pending',
+            icon: 'fas fa-clock',
+            color: '#e67700'
+        },
+        'confirmed': { 
+            text: 'تم التأكيد', 
+            class: 'status-confirmed',
+            icon: 'fas fa-check-circle',
+            color: '#1565c0'
+        },
+        'preparing': { 
+            text: 'قيد التحضير', 
+            class: 'status-preparing',
+            icon: 'fas fa-box',
+            color: '#7b1fa2'
+        },
+        'on_the_way': { 
+            text: 'في الطريق', 
+            class: 'status-on_the_way',
+            icon: 'fas fa-truck',
+            color: '#0277bd'
+        },
+        'delivered': { 
+            text: 'تم التسليم', 
+            class: 'status-delivered',
+            icon: 'fas fa-check-double',
+            color: '#2e7d32'
+        },
+        'cancelled': { 
+            text: 'ملغي', 
+            class: 'status-cancelled',
+            icon: 'fas fa-times-circle',
+            color: '#c62828'
         }
-        
+    };
+    return statuses[status] || { 
+        text: status, 
+        class: 'status-pending',
+        icon: 'fas fa-question-circle',
+        color: '#e67700'
+    };
+}
+
         function formatDate(dateString) {
             try {
                 const date = new Date(dateString);
@@ -1734,19 +1917,8 @@ function viewImage(imageUrl) {
     });
 }
 
-// دالة مساعدة للحصول على معلومات الحالة
-function getStatusInfo(status) {
-    const statuses = {
-        pending: { text: 'قيد الانتظار', color: '#f59e0b', icon: 'fa-clock' },
-        confirmed: { text: 'تم التأكيد', color: '#3b82f6', icon: 'fa-check-circle' },
-        preparing: { text: 'قيد التحضير', color: '#8b5cf6', icon: 'fa-box' },
-        on_the_way: { text: 'في الطريق', color: '#6366f1', icon: 'fa-truck' },
-        delivered: { text: 'تم التسليم', color: '#10b981', icon: 'fa-check-double' },
-        cancelled: { text: 'ملغى', color: '#ef4444', icon: 'fa-times-circle' }
-    };
-    
-    return statuses[status] || statuses.pending;
-}
+
+ 
 
 // دالة مساعدة لتنسيق التاريخ
 function formatDate(dateString) {
