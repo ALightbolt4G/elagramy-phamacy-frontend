@@ -749,13 +749,12 @@ async function loadProducts(page = 1, isLoadMore = false) {
             const cosmetics = result.data.cosmetics || [];
             
             const newProducts = [...drugs, ...cosmetics].map(product => ({
-                ...product,
-                id: product.branch_product_id || product.id,
-                type: product.product_category || 'drug',
-                price: parseFloat(product.price || 0),
-                active_ingredient: product.active_ingredient,
-                description: product.description
-            }));
+    ...product,
+    id: product.branch_product_id || product.id,
+    type: product.product_category || (drugs.includes(product) ? 'drug' : 'cosmetic'),
+    product_type: drugs.includes(product) ? 'drug' : 'cosmetic', // أضف هذا السطر
+    price: parseFloat(product.price || 0)
+}));
 
             // تطبيق فلترة الفئة
             let filteredProducts = newProducts;
@@ -817,84 +816,32 @@ function displayProducts(products, clear = true) {
         container.innerHTML = '';
     }
 
-    // تقسيم المنتجات إلى قسمين رئيسيين فقط
-    const drugs = products.filter(p => {
-        const productCategory = p.product_category?.toLowerCase() || '';
-        const categoryName = p.category?.toLowerCase() || '';
-        const productName = p.name?.toLowerCase() || '';
-        const type = p.type?.toLowerCase() || '';
-        
-        return productCategory.includes('drug') || 
-               categoryName.includes('دواء') || 
-               categoryName.includes('drug') ||
-               productName.includes('دواء') ||
-               type.includes('drug') ||
-               (p.active_ingredient && !p.description) || // يحتوي على مادة فعالة
-               (p.is_prescription === true); // يتطلب روشتة
-    });
+    // التصنيف البسيط: استخدم البيانات الأصلية بدلاً من محاولة تصنيفها
+    const drugs = products.filter(p => p.product_type === 'drug' || p.type === 'drug');
+    const cosmetics = products.filter(p => p.product_type === 'cosmetic' || p.type === 'cosmetic' || 
+                                       (!p.product_type && !p.type && !p.active_ingredient));
 
-    // المستحضرات: كل ما ليس دواءً
-    const cosmetics = products.filter(p => {
-        const productCategory = p.product_category?.toLowerCase() || '';
-        const categoryName = p.category?.toLowerCase() || '';
-        const productName = p.name?.toLowerCase() || '';
-        const type = p.type?.toLowerCase() || '';
-        
-        return productCategory.includes('cosmetic') || 
-               categoryName.includes('مستحضر') || 
-               categoryName.includes('cosmetic') ||
-               productName.includes('كريم') ||
-               productName.includes('لوشن') ||
-               productName.includes('غسول') ||
-               productName.includes('مرطب') ||
-               productName.includes('ماسك') ||
-               productName.includes('تونر') ||
-               type.includes('cosmetic') ||
-               (p.description && !p.active_ingredient); // يحتوي على وصف وليس مادة فعالة
-    });
-
-    const remainingProducts = products.filter(p => 
-        !drugs.includes(p) && !cosmetics.includes(p)
-    );
-    
-    cosmetics.push(...remainingProducts);
-
-    // دالة مساعدة لعرض البطاقات
+    // دالة مساعدة لعرض البطاقات مع تحديد النوع بدقة
     function renderCards(productList, isDrugSection = true) {
         return productList.map(product => {
-            const isDrug = drugs.includes(product);
+            // تحديد النوع بناءً على البيانات الحقيقية
+            const isDrug = isDrugSection || 
+                          product.product_type === 'drug' || 
+                          product.type === 'drug' ||
+                          product.active_ingredient ||
+                          product.is_prescription;
+            
             const badgeText = isDrug ? 'دواء' : 'مستحضر';
             const badgeClass = isDrug ? 'drug-type' : 'cosmetic-type';
             
+            // عرض المعلومات المناسبة
             let specialInfo = '';
             if (isDrug) {
                 specialInfo = product.active_ingredient ? 
                     `المادة الفعالة: ${product.active_ingredient}` : 
                     (product.description || 'دواء');
             } else {
-                specialInfo = product.description || 
-                    (product.active_ingredient ? `مكونات: ${product.active_ingredient}` : 'مستحضر تجميلي');
-            }
-
-            let iconClass = 'fa-capsules';
-            let iconColor = '#10b981';
-            
-            if (!isDrug) {
-                const productName = product.name?.toLowerCase() || '';
-                if (productName.includes('كريم') || productName.includes('مرطب')) {
-                    iconClass = 'fa-cream';
-                } else if (productName.includes('غسول') || productName.includes('صابون')) {
-                    iconClass = 'fa-soap';
-                } else if (productName.includes('شامبو')) {
-                    iconClass = 'fa-shower';
-                } else if (productName.includes('معجون') || productName.includes('اسنان')) {
-                    iconClass = 'fa-tooth';
-                } else if (productName.includes('ماسك')) {
-                    iconClass = 'fa-spa';
-                } else {
-                    iconClass = 'fa-spray-can-sparkles';
-                    iconColor = '#8b5cf6';
-                }
+                specialInfo = product.description || 'مستحضر تجميلي';
             }
 
             return `
@@ -906,21 +853,25 @@ function displayProducts(products, clear = true) {
                     <div class="product-image">
                         ${product.image_url ? 
                             `<img src="${product.image_url}" alt="${product.name}" loading="lazy">` : 
-                            `<i class="fas ${iconClass}" style="color: ${iconColor}; font-size: 50px;"></i>`
+                            `<i class="fas ${isDrug ? 'fa-capsules' : 'fa-spray-can-sparkles'}" 
+                                 style="color: ${isDrug ? '#10b981' : '#8b5cf6'}; font-size: 50px;"></i>`
                         }
                     </div>
 
                     <div class="product-info">
                         <div class="product-name">${product.name}</div>
                         
-                        <div class="product-description" style="color: ${isDrug ? '#10b981' : '#8b5cf6'}; font-weight: 500;">
+                        <div class="product-description" 
+                             style="color: ${isDrug ? '#10b981' : '#8b5cf6'}; 
+                                    font-weight: 500;">
                             ${specialInfo}
                         </div>
 
                         <div class="product-price">${product.price.toFixed(2)} جنيه</div>
                     </div>
 
-                    <button class="add-to-cart" onclick="openQuantityModal('${product.id}', '${product.type || product.product_category}')">
+                    <button class="add-to-cart" 
+                            onclick="openQuantityModal('${product.id}', '${isDrug ? 'drug' : 'cosmetic'}')">
                         <i class="fas fa-cart-plus"></i>
                         إضافة للسلة
                     </button>
@@ -929,57 +880,13 @@ function displayProducts(products, clear = true) {
         }).join('');
     }
 
+    // عرض الأقسام
     let html = '';
 
-    // قسم الأدوية
     if (drugs.length > 0) {
         html += `
-            <div class="product-category-section" style="margin-bottom: 40px; grid-column: 1 / -1;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-                    <h3 class="section-subtitle" style="
-                        display: flex;
-                        align-items: center;
-                        gap: 15px;
-                        font-size: 24px;
-                        color: var(--gray-800);
-                        margin: 0;
-                        padding: 15px 20px;
-                        background: linear-gradient(135deg, #10b98120 0%, #05966910 100%);
-                        border-radius: 16px;
-                        border-right: 5px solid #10b981;
-                    ">
-                        <div style="
-                            width: 50px;
-                            height: 50px;
-                            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                            border-radius: 12px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            color: white;
-                        ">
-                            <i class="fas fa-pills" style="font-size: 24px;"></i>
-                        </div>
-                        <div>
-                            <div>💊 الأدوية المتاحة</div>
-                            <div style="font-size: 14px; color: var(--gray-600); font-weight: normal; margin-top: 4px;">
-                                ${drugs.length} منتج - يتطلب بعضها روشتة طبية
-                            </div>
-                        </div>
-                    </h3>
-                    <div style="
-                        padding: 8px 16px;
-                        background: #10b98110;
-                        border-radius: 12px;
-                        font-size: 14px;
-                        color: #10b981;
-                        font-weight: 600;
-                        border: 1px solid #10b98130;
-                    ">
-                        <i class="fas fa-prescription-bottle-alt"></i>
-                        ${drugs.length} دواء
-                    </div>
-                </div>
+            <div class="product-category-section">
+                <h3 class="section-subtitle">💊 الأدوية المتاحة (${drugs.length})</h3>
                 <div class="products-grid">
                     ${renderCards(drugs, true)}
                 </div>
@@ -987,55 +894,10 @@ function displayProducts(products, clear = true) {
         `;
     }
 
-    // قسم المستحضرات
     if (cosmetics.length > 0) {
         html += `
-            <div class="product-category-section" style="margin-bottom: 40px; grid-column: 1 / -1;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-                    <h3 class="section-subtitle" style="
-                        display: flex;
-                        align-items: center;
-                        gap: 15px;
-                        font-size: 24px;
-                        color: var(--gray-800);
-                        margin: 0;
-                        padding: 15px 20px;
-                        background: linear-gradient(135deg, #8b5cf620 0%, #7c3aed10 100%);
-                        border-radius: 16px;
-                        border-right: 5px solid #8b5cf6;
-                    ">
-                        <div style="
-                            width: 50px;
-                            height: 50px;
-                            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-                            border-radius: 12px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            color: white;
-                        ">
-                            <i class="fas fa-spray-can-sparkles" style="font-size: 24px;"></i>
-                        </div>
-                        <div>
-                            <div>💄 مستحضرات التجميل والعناية</div>
-                            <div style="font-size: 14px; color: var(--gray-600); font-weight: normal; margin-top: 4px;">
-                                ${cosmetics.length} منتج - للعناية بالبشرة والشعر
-                            </div>
-                        </div>
-                    </h3>
-                    <div style="
-                        padding: 8px 16px;
-                        background: #8b5cf610;
-                        border-radius: 12px;
-                        font-size: 14px;
-                        color: #8b5cf6;
-                        font-weight: 600;
-                        border: 1px solid #8b5cf630;
-                    ">
-                        <i class="fas fa-spa"></i>
-                        ${cosmetics.length} مستحضر
-                    </div>
-                </div>
+            <div class="product-category-section">
+                <h3 class="section-subtitle">💄 المستحضرات والعناية (${cosmetics.length})</h3>
                 <div class="products-grid">
                     ${renderCards(cosmetics, false)}
                 </div>
@@ -1043,13 +905,12 @@ function displayProducts(products, clear = true) {
         `;
     }
 
-    // إذا لم يكن هناك منتجات
     if (drugs.length === 0 && cosmetics.length === 0) {
         html = `
-            <div style="text-align: center; padding: 60px 20px; color: var(--gray-500); grid-column: 1 / -1;">
-                <i class="fas fa-box-open" style="font-size: 60px; margin-bottom: 20px;"></i>
-                <h3 style="font-size: 22px; margin-bottom: 10px;">لا توجد منتجات متاحة حالياً</h3>
-                <p style="font-size: 16px; color: var(--gray-600);">سيتم إضافة منتجات قريباً</p>
+            <div class="no-products">
+                <i class="fas fa-box-open"></i>
+                <h3>لا توجد منتجات متاحة حالياً</h3>
+                <p>سيتم إضافة منتجات قريباً</p>
             </div>
         `;
     }
