@@ -816,62 +816,76 @@ function displayProducts(products, clear = true) {
         container.innerHTML = '';
     }
 
-    // التصنيف البسيط: استخدم البيانات الأصلية بدلاً من محاولة تصنيفها
     const drugs = products.filter(p => p.product_type === 'drug' || p.type === 'drug');
-    const cosmetics = products.filter(p => p.product_type === 'cosmetic' || p.type === 'cosmetic' || 
-                                       (!p.product_type && !p.type && !p.active_ingredient));
+    const cosmetics = products.filter(p => p.product_type === 'cosmetic' || p.type === 'cosmetic');
 
-    // دالة مساعدة لعرض البطاقات مع تحديد النوع بدقة
+    // 🔵 الحل: دالة مساعدة لتوليد ID فريد
+    function generateProductKey(product, index, isDrug) {
+        const productId = product.branch_product_id || product.id;
+        const productType = isDrug ? 'drug' : 'cosmetic';
+        
+        // إنشاء مفتاح فريد يجمع بين الـ ID والنوع والترتيب
+        return `${productType}_${productId}_${index}`;
+    }
+
     function renderCards(productList, isDrugSection = true) {
-        return productList.map(product => {
-            // تحديد النوع بناءً على البيانات الحقيقية
+        return productList.map((product, index) => {
             const isDrug = isDrugSection || 
                           product.product_type === 'drug' || 
-                          product.type === 'drug' ||
-                          product.active_ingredient ||
-                          product.is_prescription;
+                          product.type === 'drug';
             
-            const badgeText = isDrug ? 'دواء' : 'مستحضر';
-            const badgeClass = isDrug ? 'drug-type' : 'cosmetic-type';
+            const productType = isDrug ? 'drug' : 'cosmetic';
+            const productId = product.branch_product_id || product.id;
+            const productName = product.name || 'منتج';
             
-            // عرض المعلومات المناسبة
-            let specialInfo = '';
-            if (isDrug) {
-                specialInfo = product.active_ingredient ? 
-                    `المادة الفعالة: ${product.active_ingredient}` : 
-                    (product.description || 'دواء');
-            } else {
-                specialInfo = product.description || 'مستحضر تجميلي';
-            }
-
+            // 🔵 الحل: استخدام مفتاح فريد
+            const uniqueKey = generateProductKey(product, index, isDrug);
+            
+            // تنظيف النص للاستخدام في onclick
+            const cleanProductName = productName.replace(/'/g, "\\'");
+            const cleanProductId = productId.toString().replace(/'/g, "\\'");
+            const cleanProductType = productType.replace(/'/g, "\\'");
+            
+            // 🔵 الحل: تخزين البيانات الأصلية في العنصر
             return `
-                <div class="product-card">
-                    <span class="product-type ${badgeClass}">
-                        ${badgeText}
+                <div class="product-card" 
+                     data-product-id="${cleanProductId}"
+                     data-product-type="${cleanProductType}"
+                     data-product-name="${cleanProductName}"
+                     data-unique-key="${uniqueKey}">
+                    <span class="product-type ${isDrug ? 'drug-type' : 'cosmetic-type'}">
+                        ${isDrug ? 'دواء' : 'مستحضر'}
                     </span>
 
                     <div class="product-image">
                         ${product.image_url ? 
-                            `<img src="${product.image_url}" alt="${product.name}" loading="lazy">` : 
+                            `<img src="${product.image_url}" alt="${productName}" loading="lazy">` : 
                             `<i class="fas ${isDrug ? 'fa-capsules' : 'fa-spray-can-sparkles'}" 
                                  style="color: ${isDrug ? '#10b981' : '#8b5cf6'}; font-size: 50px;"></i>`
                         }
                     </div>
 
                     <div class="product-info">
-                        <div class="product-name">${product.name}</div>
+                        <div class="product-name">${productName}</div>
                         
                         <div class="product-description" 
                              style="color: ${isDrug ? '#10b981' : '#8b5cf6'}; 
                                     font-weight: 500;">
-                            ${specialInfo}
+                            ${isDrug ? 
+                                (product.active_ingredient ? 
+                                    `المادة الفعالة: ${product.active_ingredient}` : 
+                                    (product.description || 'دواء')) : 
+                                (product.description || 'مستحضر تجميلي')}
                         </div>
 
                         <div class="product-price">${product.price.toFixed(2)} جنيه</div>
                     </div>
 
                     <button class="add-to-cart" 
-                            onclick="openQuantityModal('${product.id}', '${isDrug ? 'drug' : 'cosmetic'}')">
+                            onclick="handleProductSelection(this)"
+                            data-product-id="${cleanProductId}"
+                            data-product-type="${cleanProductType}"
+                            data-product-name="${cleanProductName}">
                         <i class="fas fa-cart-plus"></i>
                         إضافة للسلة
                     </button>
@@ -905,18 +919,106 @@ function displayProducts(products, clear = true) {
         `;
     }
 
-    if (drugs.length === 0 && cosmetics.length === 0) {
-        html = `
-            <div class="no-products">
-                <i class="fas fa-box-open"></i>
-                <h3>لا توجد منتجات متاحة حالياً</h3>
-                <p>سيتم إضافة منتجات قريباً</p>
-            </div>
-        `;
-    }
-
     container.innerHTML = html;
 }
+
+// 🔵 دالة جديدة للتعامل مع اختيار المنتج
+function handleProductSelection(button) {
+    console.log('🖱️ نقر على زر المنتج');
+    
+    // الحصول على البيانات من الزر
+    const productId = button.getAttribute('data-product-id');
+    const productType = button.getAttribute('data-product-type');
+    const productName = button.getAttribute('data-product-name');
+    
+    console.log('  - ID:', productId);
+    console.log('  - النوع:', productType);
+    console.log('  - الاسم:', productName);
+    
+    // الحصول على البطاقة الأم
+    const card = button.closest('.product-card');
+    const uniqueKey = card.getAttribute('data-unique-key');
+    console.log('  - المفتاح الفريد:', uniqueKey);
+    
+    // 🔵 البحث عن المنتج باستخدام المفتاح الفريد
+    let product = null;
+    
+    if (allProducts && allProducts.length > 0) {
+        // تجزئة المفتاح الفريد للبحث
+        const parts = uniqueKey.split('_');
+        if (parts.length >= 3) {
+            const searchType = parts[0]; // drug أو cosmetic
+            const searchId = parts[1]; // product ID
+            
+            product = allProducts.find(p => {
+                const pId = p.branch_product_id || p.id;
+                const pType = p.product_type || p.type;
+                return pId && pId.toString() === searchId && 
+                       pType && pType.toString() === searchType;
+            });
+        }
+        
+        if (!product) {
+            // البحث مباشرة بالاسم إذا لم نجد بالمفتاح
+            product = allProducts.find(p => {
+                const pName = p.name || '';
+                return pName === productName;
+            });
+        }
+    }
+    
+    if (product) {
+        console.log('✅ تم العثور على المنتج:', product.name);
+    } else {
+        console.log('⚠️ المنتج غير موجود في allProducts، استخدام البيانات من الزر');
+        product = {
+            id: productId,
+            branch_product_id: productId,
+            name: productName,
+            product_type: productType,
+            type: productType,
+            price: 0 // سيتم تحديثه لاحقاً
+        };
+    }
+    
+    // فتح نافذة الكمية
+    openQuantityModal(productId, productType, productName);
+}
+
+// 🔵 دالة لفحص البيانات في الكونسول
+function debugProductsData() {
+    console.log('🔍 فحص بيانات المنتجات:');
+    console.log('عدد المنتجات في allProducts:', allProducts.length);
+    
+    // فحص الأدوية
+    const drugs = allProducts.filter(p => 
+        p.product_type === 'drug' || p.type === 'drug'
+    );
+    console.log('عدد الأدوية:', drugs.length);
+    drugs.forEach((drug, index) => {
+        console.log(`  ${index + 1}. ${drug.name} | ID: ${drug.id} | Type: ${drug.type}`);
+    });
+    
+    // فحص المستحضرات
+    const cosmetics = allProducts.filter(p => 
+        p.product_type === 'cosmetic' || p.type === 'cosmetic'
+    );
+    console.log('عدد المستحضرات:', cosmetics.length);
+    cosmetics.forEach((cosmetic, index) => {
+        console.log(`  ${index + 1}. ${cosmetic.name} | ID: ${cosmetic.id} | Type: ${cosmetic.type}`);
+    });
+    
+    // التحقق من الـ IDs المتكررة
+    const ids = allProducts.map(p => p.id || p.branch_product_id);
+    const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
+    console.log('الـ IDs المتكررة:', [...new Set(duplicateIds)]);
+}
+
+// استدع هذه الدالة بعد تحميل المنتجات
+// في نهاية دالة loadProducts:
+setTimeout(() => {
+    debugProductsData();
+}, 1000);
 
 function updateLoadMoreButton(show) {
     const loadMoreContainer = document.getElementById('loadMoreContainer');
@@ -942,60 +1044,161 @@ function loadMoreProducts() {
 }
 
 // ==================== نافذة اختيار الكمية ====================
-async function openQuantityModal(productId, productType) {
+async function openQuantityModal(productId, productType, productName = '') {
+    console.log('🔔 openQuantityModal تم استدعاؤها!');
+    console.log('  - productId:', productId);
+    console.log('  - productType:', productType);
+    console.log('  - productName:', productName);
+    
     try {
-        // البحث في المنتجات المحملة أولاً
-        let product = allProducts.find(p => 
-            p.id == productId || p.branch_product_id == productId
-        );
-
-        // إذا لم نجده، نبحث في نتائج البحث
-        if (!product && currentSearchResults) {
-            product = currentSearchResults.find(r => 
-                r.branch_product_id == productId || r.id == productId
-            );
+        const cleanProductId = productId.toString().trim();
+        const cleanProductType = productType.toString().trim();
+        
+        if (!cleanProductId || cleanProductId === 'undefined' || cleanProductId === 'null') {
+            showMessage('خطأ: معرف المنتج غير صالح', 'error');
+            return;
+        }
+        
+        // البحث عن المنتج في البيانات المحملة
+        let product = null;
+        
+        // 🔵 الحل: البحث باستخدام كلا المعرّفين
+        if (allProducts && allProducts.length > 0) {
+            product = allProducts.find(p => {
+                const pId = p.branch_product_id || p.id;
+                const pType = p.product_type || p.type;
+                // مطابقة ID والنوع معاً
+                return pId && pId.toString() === cleanProductId && 
+                       pType && pType.toString() === cleanProductType;
+            });
+            
             if (product) {
+                console.log('✅ المنتج موجود في allProducts:', product.name, 'نوع:', product.type);
+            } else {
+                console.log('⚠️ المنتج غير موجود في allProducts مع هذا المزيج ID/Type');
+                
+                // محاولة البحث بدون مراعاة النوع (backup)
+                product = allProducts.find(p => {
+                    const pId = p.branch_product_id || p.id;
+                    return pId && pId.toString() === cleanProductId;
+                });
+                
+                if (product) {
+                    console.log('✅ تم العثور على منتج بنفس ID ولكن نوع مختلف:', product.name, 'نوع:', product.type);
+                    // تصحيح النوع بناءً على المنتج الموجود
+                    product.product_type = product.type;
+                    product.type = product.type;
+                }
+            }
+        }
+        
+        // إذا لم نجد المنتج، نبحث في نتائج البحث
+        if (!product && currentSearchResults && currentSearchResults.length > 0) {
+            product = currentSearchResults.find(r => {
+                const rId = r.branch_product_id || r.id;
+                const rType = r.product_type || r.type;
+                return rId && rId.toString() === cleanProductId && 
+                       rType && rType.toString() === cleanProductType;
+            });
+            
+            if (product) {
+                console.log('✅ المنتج موجود في currentSearchResults:', product.name);
                 product = {
                     ...product,
                     id: product.branch_product_id || product.id,
-                    type: productType,
-                    price: parseFloat(product.price) || 0
+                    product_type: cleanProductType,
+                    type: cleanProductType,
+                    price: parseFloat(product.price) || 0,
+                    name: product.name || productName || 'منتج'
                 };
             }
         }
-
-        // إذا لم نجده بعد، نجلب من API
-        if (!product) {
-            product = await fetchProductFromAPI(productId, productType);
+        
+        // إذا لم نجد المنتج بعد، نحاول البحث فقط بالاسم
+        if (!product && productName) {
+            console.log('🔍 محاولة البحث بالاسم:', productName);
+            
+            if (allProducts && allProducts.length > 0) {
+                product = allProducts.find(p => {
+                    const pName = p.name || '';
+                    return pName.includes(productName) || productName.includes(pName);
+                });
+                
+                if (product) {
+                    console.log('✅ تم العثور على المنتج بالاسم:', product.name);
+                    // تصحيح الـ ID والنوع
+                    product.id = cleanProductId;
+                    product.branch_product_id = cleanProductId;
+                    product.product_type = cleanProductType;
+                    product.type = cleanProductType;
+                }
+            }
         }
-
+        
+        // إذا لم نجد المنتج بعد، ننشئ بيانات افتراضية
         if (!product) {
-            showMessage('المنتج غير متاح حالياً', 'error');
-            return;
+            console.log('⚠️ المنتج غير موجود في البيانات المحملة، إنشاء بيانات افتراضية');
+            product = {
+                id: cleanProductId,
+                branch_product_id: cleanProductId,
+                name: productName || 'منتج',
+                product_type: cleanProductType,
+                type: cleanProductType,
+                price: 0
+            };
+            
+            // محاولة جلب السعر من API
+            try {
+                const price = await getProductPrice(cleanProductId, cleanProductType);
+                product.price = price;
+            } catch (error) {
+                console.error('❌ خطأ في جلب السعر:', error);
+                product.price = 0;
+            }
         }
-
+        
         // حفظ بيانات المنتج
-        selectedProductForQuantity = { 
-            productId: product.branch_product_id || product.id, 
-            productType: productType 
+        selectedProductForQuantity = {
+            productId: cleanProductId,
+            productType: cleanProductType
         };
         
         modalProductData = product;
         modalQuantity = 1;
         modalProductPrice = parseFloat(product.price || 0);
-
-        // تحديث واجهة النافذة المنبثقة
+        
+        // تحديث واجهة المودال
         updateQuantityModalUI();
-
-        // إظهار النافذة المنبثقة
+        
+        // إظهار المودال
         const modal = document.getElementById('quantityModal');
         if (modal) {
             modal.style.display = 'flex';
+            console.log('✅ تم عرض نافذة الكمية للمنتج:', product.name, 'السعر:', product.price);
         }
-
+        
     } catch (error) {
-        console.error('❌ خطأ في فتح نافذة الكمية:', error);
-        showMessage('تعذر فتح نافذة الكمية', 'error');
+        console.error('❌ خطأ في openQuantityModal:', error);
+        showMessage('حدث خطأ في فتح نافذة الكمية', 'error');
+    }
+}
+
+async function getProductPrice(productId, productType) {
+    if (!selectedBranchId) return 0;
+    
+    try {
+        const response = await fetch(
+            `${API_BASE}/products/${productId}/price?type=${productType}&branchId=${selectedBranchId}`
+        );
+        
+        if (response.ok) {
+            const result = await response.json();
+            return parseFloat(result.price) || 0;
+        }
+        return 0;
+    } catch (error) {
+        console.error('❌ خطأ في جلب السعر:', error);
+        return 0;
     }
 }
 
@@ -1022,6 +1225,99 @@ function updateQuantityModalUI() {
             productImage.innerHTML = `<i class="fas ${isDrug ? 'fa-capsules' : 'fa-spray-can-sparkles'}"></i>`;
         }
     }
+}
+function closeQuantityModal() {
+    const modal = document.getElementById('quantityModal');
+    if (modal) {
+        modal.style.display = 'none';
+        console.log('✅ تم إغلاق نافذة الكمية');
+    }
+    selectedProductForQuantity = null;
+    modalProductData = null;
+}
+function changeModalQuantity(change) {
+    if (!modalProductData) return;
+    
+    let newQuantity = modalQuantity + change;
+    if (newQuantity < 1) newQuantity = 1;
+    if (newQuantity > 99) newQuantity = 99;
+    
+    modalQuantity = newQuantity;
+    
+    const modalInput = document.getElementById('modalQuantityInput');
+    if (modalInput) {
+        modalInput.value = modalQuantity;
+    }
+    
+    const totalPriceEl = document.getElementById('modalTotalPrice');
+    if (totalPriceEl) {
+        totalPriceEl.textContent = `${(modalQuantity * modalProductPrice).toFixed(2)} جنيه`;
+    }
+}
+function confirmAddToCart() {
+    console.log('🛒 تأكيد إضافة إلى السلة');
+    
+    if (!selectedProductForQuantity || !modalProductData) {
+        showMessage('لم يتم تحديد منتج', 'error');
+        return;
+    }
+    
+    const { productId, productType } = selectedProductForQuantity;
+    const quantity = parseInt(document.getElementById('modalQuantityInput')?.value) || 1;
+    
+    console.log('  - إضافة المنتج:', {
+        productId,
+        productType,
+        quantity,
+        productName: modalProductData.name
+    });
+    
+    // إضافة المنتج للسلة
+    addToCart(productId, productType, quantity, modalProductData);
+    
+    closeQuantityModal();
+    showMessage('تمت الإضافة إلى السلة ✓', 'success');
+}
+function addToCart(productId, productType, quantity, productData) {
+    console.log('➕ إضافة إلى السلة:', {
+        productId,
+        productType,
+        quantity,
+        productName: productData.name
+    });
+    
+    const existingIndex = cart.findIndex(item => 
+        (item.branch_product_id == productId || item.product_id == productId) && 
+        item.product_type === productType
+    );
+    
+    const price = parseFloat(productData.price) || 0;
+    const itemTotal = price * quantity;
+    
+    if (existingIndex !== -1) {
+        // تحديث الكمية
+        cart[existingIndex].quantity = quantity;
+        cart[existingIndex].price = price;
+        console.log(`✅ تم تحديث المنتج: ${productData.name}`);
+    } else {
+        // إضافة جديد
+        cart.push({
+            product_type: productType,
+            branch_product_id: productId,
+            product_id: productData.id || productId,
+            quantity: quantity,
+            name: productData.name || 'منتج',
+            price: price,
+            type: productType,
+            active_ingredient: productData.active_ingredient,
+            description: productData.description
+        });
+        console.log(`✅ تم إضافة المنتج الجديد: ${productData.name}`);
+    }
+    
+    updateCartBadge();
+    updateCartDisplay();
+    saveCart();
 }
 
 async function fetchProductFromAPI(productId, productType) {
@@ -1903,3 +2199,6 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+// في نهاية ملف JavaScript:
+window.handleProductSelection = handleProductSelection;
+window.debugProductsData = debugProductsData;
