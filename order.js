@@ -1535,14 +1535,14 @@ function addToCart(productId, productType, quantity, productData) {
     
     if (existingIndex !== -1) {
         // تحديث الكمية والسعر
-        cart[existingIndex].quantity = quantity;
+        cart[existingIndex].quantity += quantity; // ⚠️ إضافة إلى الكمية الحالية
         cart[existingIndex].price = price;
-        console.log(`✅ تم تحديث المنتج: ${productData.name}، الكمية: ${quantity}`);
+        console.log(`✅ تم تحديث المنتج: ${productData.name}، الكمية الجديدة: ${cart[existingIndex].quantity}`);
     } else {
         // إضافة منتج جديد
         cart.push({
             product_type: productType,
-            branch_product_id: branchProductId, // ⚠️ استخدم branch_product_id
+            branch_product_id: branchProductId,
             product_id: productData.product_id || productData.id,
             quantity: quantity,
             name: productData.name || 'منتج',
@@ -1742,15 +1742,18 @@ function updateCartDisplay() {
     let total = 0;
     let itemsHtml = '';
 
-    cart.forEach(item => {
+    cart.forEach((item, index) => {
         const itemTotal = (item.price || 0) * item.quantity;
         total += itemTotal;
 
         const typeIcon = item.product_type === 'drug' ? 'fa-capsules' : 'fa-spray-can-sparkles';
         const typeColor = item.product_type === 'drug' ? 'var(--success)' : '#3b82f6';
 
+        // ⚠️ المهم: استخدام branch_product_id بدلاً من product_id
+        const productIdentifier = item.branch_product_id || item.product_id;
+        
         itemsHtml += `
-            <div class="cart-item">
+            <div class="cart-item" data-item-index="${index}">
                 <div class="cart-item-image" style="background: ${typeColor}20;">
                     <i class="fas ${typeIcon}" style="color: ${typeColor}; font-size: 28px; display: flex; align-items: center; justify-content: center; height: 100%;"></i>
                 </div>
@@ -1759,20 +1762,20 @@ function updateCartDisplay() {
                     <div class="cart-item-details">
                         <div class="cart-item-price">${itemTotal.toFixed(2)} جنيه</div>
                         <div class="cart-item-quantity">
-                            <button class="cart-qty-btn" onclick="updateCartItemQuantity('${item.product_type}', '${item.product_id}', -1)">
+                            <button class="cart-qty-btn" onclick="updateCartQuantity(${index}, -1)">
                                 <i class="fas fa-minus"></i>
                             </button>
                             <input type="text" 
                                    value="${item.quantity}" 
                                    class="cart-qty-input" 
                                    readonly>
-                            <button class="cart-qty-btn" onclick="updateCartItemQuantity('${item.product_type}', '${item.product_id}', 1)">
+                            <button class="cart-qty-btn" onclick="updateCartQuantity(${index}, 1)">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
                     </div>
                 </div>
-                <button class="cart-item-remove" onclick="removeFromCart('${item.product_type}', '${item.product_id}')">
+                <button class="cart-item-remove" onclick="removeCartItem(${index})">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -1836,6 +1839,73 @@ function updateCartDisplay() {
         checkoutBtn.disabled = false;
     }
 }
+
+// 🔧 دالة جديدة للتحكم في الكمية بناءً على الفهرس
+function updateCartQuantity(itemIndex, change) {
+    console.log('🔄 تحديث الكمية:', { itemIndex, change });
+    
+    if (itemIndex < 0 || itemIndex >= cart.length) {
+        console.error('❌ فهرس غير صالح:', itemIndex);
+        return;
+    }
+    
+    const item = cart[itemIndex];
+    
+    if (!item) {
+        console.error('❌ العنصر غير موجود:', itemIndex);
+        return;
+    }
+    
+    const newQuantity = item.quantity + change;
+    
+    if (newQuantity < 1) {
+        // إذا كانت الكمية أقل من 1، احذف العنصر
+        if (confirm(`هل تريد إزالة ${item.name} من السلة؟`)) {
+            removeCartItem(itemIndex);
+        }
+        return;
+    }
+    
+    if (newQuantity > 99) {
+        showMessage('الحد الأقصى للكمية هو 99', 'warning');
+        return;
+    }
+    
+    // تحديث الكمية مباشرة
+    item.quantity = newQuantity;
+    
+    // تحديث العرض
+    updateCartBadge();
+    updateCartDisplay();
+    saveCart();
+    
+    // إظهار رسالة التحديث
+    showMessage(`تم تحديث كمية ${item.name} إلى ${newQuantity}`, 'success', 2000);
+}
+
+// 🔧 دالة جديدة لحذف العنصر بناءً على الفهرس
+function removeCartItem(itemIndex) {
+    if (itemIndex < 0 || itemIndex >= cart.length) {
+        console.error('❌ فهرس غير صالح:', itemIndex);
+        return;
+    }
+    
+    const itemName = cart[itemIndex].name;
+    
+    // إزالة العنصر من المصفوفة
+    cart.splice(itemIndex, 1);
+    
+    // تحديث العرض والحفظ
+    updateCartBadge();
+    updateCartDisplay();
+    saveCart();
+    
+    showMessage(`تم إزالة ${itemName} من السلة`, 'success', 2000);
+}
+
+// 🔧 إزالة الدوال القديمة أو تحديثها
+window.updateCartQuantity = updateCartQuantity;
+window.removeCartItem = removeCartItem;
 
 function updateCartItemQuantity(productType, productId, change) {
     const item = cart.find(item => 
