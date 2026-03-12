@@ -750,10 +750,12 @@ async function authenticateClient(phone, name = null, areaId = null, address = n
 }
     // تسجيل العميل في فرع
     // تسجيل العميل في فرع
+// تسجيل العميل في فرع - النسخة المصححة
 async function registerToBranch(clientId, branchId) {
     try {
         console.log('📤 إرسال طلب تسجيل في الفرع:', { clientId, branchId });
         
+        // ✅ يجب إرسالها كـ object وليس parameters
         const response = await fetch(`${API_BASE}/clients/register-branch`, {
             method: 'POST',
             headers: { 
@@ -761,8 +763,8 @@ async function registerToBranch(clientId, branchId) {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                client_id: clientId,
-                branch_id: branchId
+                clientId: clientId,   // 🔴 ملاحظة: اسم الحقل clientId (ليس client_id)
+                branchId: branchId    // 🔴 ملاحظة: اسم الحقل branchId (ليس branch_id)
             })
         });
         
@@ -780,7 +782,8 @@ async function registerToBranch(clientId, branchId) {
         throw error;
     }
 }
-    // ==================== UI Functions ====================
+
+// ==================== UI Functions ====================
     
     // تحويل بين التبويبات
     function switchTab(tab) {
@@ -1029,36 +1032,16 @@ async function handleRegister() {
         }, 1500);
     }
     
-    // التسجيل في الفروع المختارة
-    // التسجيل في الفروع المختارة
+    // التسجيل في الفروع المختارة - النسخة المصححة
 async function handleBranchRegistration() {
     if (selectedBranches.length === 0) {
         showMessage('يرجى اختيار فرع واحد على الأقل', 'error');
         return;
     }
     
-    // تحقق من وجود العميل
     if (!currentClient || !currentClient.id) {
         showMessage('بيانات العميل غير متوفرة. يرجى إعادة التسجيل', 'error');
-        
-        // محاولة استرجاع العميل من localStorage
-        const savedClient = localStorage.getItem('client');
-        if (savedClient) {
-            try {
-                currentClient = JSON.parse(savedClient);
-                console.log('🔄 تم استرجاع العميل من localStorage:', currentClient);
-            } catch (e) {
-                console.error('❌ خطأ في تحليل بيانات العميل:', e);
-            }
-        }
-        
-        if (!currentClient || !currentClient.id) {
-            showMessage('يرجى إعادة تسجيل الدخول', 'error');
-            setTimeout(() => {
-                switchTab('login');
-            }, 2000);
-            return;
-        }
+        return;
     }
     
     console.log('👤 تسجيل العميل في الفروع:', {
@@ -1073,7 +1056,26 @@ async function handleBranchRegistration() {
     try {
         const promises = selectedBranches.map(branchId => {
             console.log(`📝 تسجيل العميل ${currentClient.id} في الفرع ${branchId}`);
-            return registerToBranch(currentClient.id, branchId);
+            
+            // ✅ إرسال كـ object بالحقول الصحيحة
+            return fetch(`${API_BASE}/clients/register-branch`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    clientId: currentClient.id,  // ✅ camelCase
+                    branchId: branchId            // ✅ camelCase
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message);
+                }
+                return data;
+            });
         });
         
         const results = await Promise.all(promises);
@@ -1091,16 +1093,14 @@ async function handleBranchRegistration() {
         
     } catch (error) {
         console.error('❌ خطأ في التسجيل في الفروع:', error);
-        showMessage('حدث خطأ أثناء التسجيل في الفروع. سيتم تخطي هذه الخطوة', 'error');
+        showMessage(error.message || 'حدث خطأ أثناء التسجيل في الفروع', 'error');
         
-        // تخطي المباشرة إلى صفحة الطلبات
-        setTimeout(() => {
-            toggleButtonLoading('saveBranchesBtn', false);
-            window.location.href = 'order.html';
-        }, 2000);
+        // إعادة تفعيل الزر
+        toggleButtonLoading('saveBranchesBtn', false);
     }
 }
-    // ==================== Event Listeners ====================
+
+// ==================== Event Listeners ====================
     
     // عند تحميل الصفحة
     document.addEventListener('DOMContentLoaded', async () => {
